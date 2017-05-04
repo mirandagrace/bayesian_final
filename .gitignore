@@ -2,3 +2,7 @@
 .Rhistory
 .RData
 storm_details.csv
+*.synctex
+*.log
+*.zip
+*.gz

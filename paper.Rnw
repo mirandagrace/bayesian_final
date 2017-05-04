@@ -1,0 +1,87 @@
+\documentclass{article}
+\usepackage[margin=0.75in]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx,float}
+\usepackage{multirow,setspace}
+\usepackage{natbib,enumerate}
+\usepackage{booktabs}
+\usepackage{placeins}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{wrapfig}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{listings}
+
+\newcommand{\HRule}{\rule{\linewidth}{0.5mm}}
+\newcommand{\tab}{\hspace{0.5cm}}
+\newcommand{\modref}[1]{(\ref{#1})}
+\mathchardef\mhyphen="2D
+
+
+
+
+\newcounter{DefnCounter}
+\setcounter{DefnCounter}{1}
+
+\newcounter{ThmCounter}
+\setcounter{ThmCounter}{1}
+
+\newcounter{ExampleCounter}
+\setcounter{ExampleCounter}{1}
+
+\newcommand{\defn}[1]{\textsc{Definition 1.\arabic{DefnCounter}\stepcounter{DefnCounter}: #1\\} }
+\newcommand{\thm}{\textsc{Theorem 1.\arabic{ThmCounter}\stepcounter{ThmCounter}\\} }
+\newcommand{\ex}{\textsc{Example 1.\arabic{ExampleCounter}\stepcounter{ExampleCounter}\\} }
+
+\newcommand{\Defn}{\underline{Definition}}
+\newcommand{\Q}{\underline{Question}}
+\newcommand{\Qs}{\underline{Questions}}
+\newcommand{\bbeta}{{\mbox{\boldmath$\beta$}}}
+\newcommand{\bmu}{{\mbox{\boldmath$\mu$}}}
+\newcommand{\balpha}{{\mbox{\boldmath$\alpha$}}}
+\newcommand{\btheta}{{\mbox{\boldmath$\theta$}}}
+\newcommand{\bphi}{{\mbox{\boldmath$\phi$}}}
+\newcommand{\bSigma}{{\mbox{\boldmath$\Sigma$}}}
+\newcommand{\bLambda}{{\mbox{\boldmath$\Lambda$}}}
+\newcommand{\bpi}{{\mbox{\boldmath$\pi$}}}
+\newcommand{\R}{\texttt{R}}
+\newcommand{\Lik}{\mathcal{L}}
+\newcommand{\bx}{\textbf{x}}
+\newcommand{\by}{\textbf{y}}
+\newcommand{\bX}{\textbf{X}}
+\newcommand{\sic}{\text{Inv-}\chi^2}
+
+
+\newcommand{\sao}{SaO$_2$}
+
+\setlength{\marginparwidth}{2cm}
+\begin{document}
+\SweaveOpts{concordance=TRUE}
+\begin{center}
+	\vspace{0.1cm}
+	\textsc{\LARGE MATH 640 Final Project} \\[0.1cm]
+	Jason Michaels (jam521), Niko Paulson (ndp32), Miranda Seitz-McLeese (mgs85) 
+\end{center}
+\section{Introduction}
+\label{s:intro}
+This analysis will be done on a data set of a variety of medical measurements about severe weather in the United States.
+
+The remainder of this analysis is organized as follows: Section~\ref{s:methods} discusses and derives the models and factors that will be used in the analysis. Section~\ref{s:results} describes the results of the analysis. And Section~\ref{s:discussion} contains the conclusions.
+
+\section{Results}
+\label{s:results}
+
+\section{Methods}
+\label{s:methods}
+
+\section{Discussion}
+\label{s:discussion}
+
+\clearpage
+\section*{Appendix A}
+This appendix includes the code used to implement the models.
+
+\section*{Appendix B}
+This appendix will include details on the calculations required to derive our models.
+\end{document}
