@@ -3,7 +3,7 @@
 \usepackage{amsmath,amssymb}
 \usepackage{graphicx,float}
 \usepackage{multirow,setspace}
-\usepackage{natbib,enumerate}
+\usepackage{enumerate}
 \usepackage{booktabs}
 \usepackage{placeins}
 \usepackage{caption}
@@ -66,19 +66,60 @@
 \end{center}
 \section{Introduction}
 \label{s:intro}
-This analysis will be done on a data set of a variety of medical measurements about severe weather in the United States.
+This analysis will be done on a data set of a variety of measurements about severe weather in the United States. 
+The data set contains a variety of measures from severe weather events in the United States from 1996-2016. 
+For this project we focused on the deaths directly attributable to the event.
+Understanding how and at what rate severe weather events become lethal in the United States has tremendous public health impacts.
+In this paper we compare four possible models for the deaths: The traditional Poisson and negative binomial distributions, as well as the zero inflated variant of each.
 
-The remainder of this analysis is organized as follows: Section~\ref{s:methods} discusses and derives the models and factors that will be used in the analysis. Section~\ref{s:results} describes the results of the analysis. And Section~\ref{s:discussion} contains the conclusions.
-
-\section{Results}
-\label{s:results}
+The remainder of this analysis is organized as follows: Section~\ref{s:methods} discusses and derives the models. Section~\ref{s:results} describes the results of the analysis. And Section~\ref{s:discussion} contains the conclusions.
 
 \section{Methods}
 \label{s:methods}
+The deaths attributed to a severe weather event is `count' data. 
+The most common model used for count data is the Poisson distribution. 
+However for some weather events, the negative binomial model is a better fit, because the Poisson distribution assumes that the events being counted occur independently.
+
+Fortunately, the vast majority of severe weather events in the United States involve no deaths, therefore we wanted to also account for the possibility of structural zeros, therefore we also considered zero inflated variants. 
+These distributions are created by returning $0$ with probability $\sigma$ and sampling from the original distribution with probability $(1-\sigma)$. 
+
+We will derive and fit a model for each of the four distributions and see if there is a difference in our results and evaluate to determine which model best fits the data.
+
+\subsection{Poisson}
+\label{ss:mPoisson}
+
+\subsection{Negative Binomial}
+\label{ss:mNBinom}
+
+
+\subsection{Zero Inflated Poisson}
+\label{ss:mZiPoisson}
+
+\subsection{Zero Inflated Negative Binomial}
+\label{ss:mZiNBinom}
+
+\section{Results}
+\label{s:results}
+\subsection{Poisson}
+\label{ss:rPoisson}
+
+\subsection{Negative Binomial}
+\label{ss:rNBinom}
+
+\subsection{Zero Inflated Poisson}
+\label{ss:rZiPoisson}
+
+\subsection{Zero Inflated Negative Binomial}
+\label{ss:rZiNBinom}
 
 \section{Discussion}
 \label{s:discussion}
 
+\begin{thebibliography}{1}
+  \bibitem{dataset} NOAA's Severe Weather Data Inventory, 
+    \url{https://www1.ncdc.noaa.gov/pub/data/swdi/stormevents/csvfiles/}. 
+    Accessed April 2017.
+\end{thebibliography}
 \clearpage
 \section*{Appendix A}
 This appendix includes the code used to implement the models.
