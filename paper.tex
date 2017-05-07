@@ -97,6 +97,13 @@ We will derive and fit a model for each of the four distributions and see if the
 
 \subsection{Zero Inflated Negative Binomial}
 \label{ss:mZiNBinom}
+The Zero Inflated Negative Binomial (ZINB) model has three parameters $\sigma,$ the probability of a structural zero, and $p,r$ the usual negative binomial parameters. 
+For a single $X$ the probability density is: 
+$$p(X|\sigma, p, r) = \sigma I_{X=0}(X) + (1-\sigma)\frac{\Gamma(r+X)}{\Gamma(r)X!}.$$
+We take the uniform priors for $\sigma$ and $p$ as well as the non-informative gamma for $r$ which is $r^{-1/2}$. For a full derivation, see \ref{a:dZINB}. My posterior is:
+$$p(r,\sigma, p|X)\propto\left(\sigma + (1-\sigma)(1-p)^r\right)^Z(1-\sigma)^{N-Z}(1-p)^{(N-Z)r}p^{\sum_{i=1}^NX_i}r^{-1/2}\prod_{i=1}^N\left(\frac{\Gamma(r+X_i)}{\Gamma(r)}\right)$$
+This distribution does not factor nicely, so I will use the Metropolis algorithm to sample from it. 
+Because this posterior does not suggest any obvious proposal distributions I will sample each independently from a normal distribution centered at $\theta^*$, and with a variance that is tuned to yeild an appropriate acceptance rate.
 
 \section{Results}
 \label{s:results}
@@ -121,9 +128,32 @@ We will derive and fit a model for each of the four distributions and see if the
     Accessed April 2017.
 \end{thebibliography}
 \clearpage
-\section*{Appendix A}
+\appendix
+\section{Code}
+\label{a:code}
 This appendix includes the code used to implement the models.
 
-\section*{Appendix B}
+\section{Derivations}
+\label{a:derivation}
 This appendix will include details on the calculations required to derive our models.
+\subsection{Zero Inflated Negative Binomial Derivation}
+\label{a:dZINB}
+The likelihood for the ZINB is 
+\begin{align*}
+\mathcal{L}(X|\sigma, p, r) &= \prod_{i=1}^N \sigma I_{X=0}(X_i) + (1-\sigma)\frac{\Gamma(r+X_i)}{\Gamma(r)X_i!}\\
+\intertext{For ease of notation let $Z$ be the number of zero values in $X$, and $N$ be the total number of observations.}
+&=\prod_{X_i=0}\left(\sigma + (1-\sigma)p^{X_i}(1-p)^r\frac{\Gamma(r+X_i)}{\Gamma(r)X_i!}\right)\prod_{X_i\ne 0}\left((1-\sigma)p^{X_i}(1-p)^r\frac{\Gamma(r+X_i)}{\Gamma(r)X_i!}\right)\\
+&=\left(\sigma + (1-\sigma)(1-p)^r\right)^Z\prod_{X_i\ne 0}\left((1-\sigma)p^{X_i}(1-p)^r\frac{\Gamma(r+X_i)}{\Gamma(r)X_i!}\right)\\
+&\propto\left(\sigma + (1-\sigma)(1-p)^r\right)^Z\prod_{X_i\ne 0}\left((1-\sigma)p^{X_i}(1-p)^r\frac{\Gamma(r+X_i)}{\Gamma(r)}\right)\\
+&\propto\left(\sigma + (1-\sigma)(1-p)^r\right)^Z(1-\sigma)^{N-Z}(1-p)^{(N-Z)r}p^{\sum_{i=1}^NX_i}\prod_{i=1}^n\left(\frac{\Gamma(r+X_i)}{\Gamma(r)}\right)
+\end{align*}
+As mentioned in section \ref{ss:mZiNBinom} we take the uniform priors for $\sigma$ and $p$ as well as the non-informative gamma for $r$ which is $r^{-1/2}$. Therefore my joint posterior is:
+\begin{align*}
+p(r,\sigma, p|X)\propto&\left(\sigma + (1-\sigma)(1-p)^r\right)^Z(1-\sigma)^{N-Z}(1-p)^{(N-Z)r}p^{\sum_{i=1}^NX_i}r^{-1/2}\prod_{i=1}^N\left(\frac{\Gamma(r+X_i)}{\Gamma(r)}\right)\\
+\intertext{I am now going to take the log of the posterior because it helps with computation}
+\ln\left(p(r,\sigma, p|X)\right)\propto&Z\ln\left(1 + (1/\sigma-1)(1-p)^r\right) + Z\ln(\sigma) + (N-Z)\ln(1-\sigma)+(N-Z)r\ln(1-p)\\
+&+\sum_{i=1}^NX_i\ln(p)-\ln(r)/2-N\ln(\Gamma(r))+\sum_{i=1}^N\ln(\Gamma(r+X_i))
+%\propto\left(\sigma + (1-\sigma)(1-p)^r\right)^Z(1-\sigma)^{N-Z}(1-p)^{(N-Z)r}p^{\sum_{i=1}^NX_i}r^{-1/2}\prod_{i=1}^\left(\frac{\Gamma(r+X_i)}{\Gamma(r)}\right)\\
+\end{align*}
+
 \end{document}
