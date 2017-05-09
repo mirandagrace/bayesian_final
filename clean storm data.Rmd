@@ -1,0 +1,62 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+```{r warning = FALSE, message = FALSE, echo = FALSE}
+setwd("/users/nikopaulson/documents/homework/georgetown/math640")
+library(tidyverse)
+
+storm <- read_csv("storm_details.csv") 
+
+events_from_codebook <- c("Astronomical Low Tide", "Avalanche", "Blizzard", "Coastal Flood", "Cold/Wind Chill", "Debris Flow", "Dense Fog", "Dense Smoke", "Drought", "Dust Devil", "Dust Storm", "Excessive Heat", "Extreme Cold/Wind Chill", "Flash Flood", "Flood", "Freezing Fog", "Frost/Freeze", "Funnel Cloud", "Hail", "Heat", "Heavy Rain", "Heavy Snow", "High Surf", "High Wind", "Hurricane/Typhoon", "Ice Storm", "Lakeshore Flood", "Lake-Effect Snow", "Lightning", "Marine Hail", "Marine High Wind", "Marine Strong Wind", "Marine Thunderstorm Wind", "Rip Current", "Seiche", "Sleet", "Storm Tide", "Strong Wind", "Thunderstorm Wind", "Tornado", "Tropical Depression", "Tropical Storm", "Tsunami", "Volcanic Ash", "Waterspout", "Wildfire", "Winter Storm", "Winter Weather")
+
+have <- toupper(sort(unique(storm$EVENT_TYPE)))
+want <- toupper(events_from_codebook)
+must_rename <- have[which(have %in% want == FALSE)]
+
+df <- storm %>%
+  mutate(EVENT_TYPE = toupper(EVENT_TYPE)) %>%
+  mutate(EVENT_TYPE = replace(EVENT_TYPE, EVENT_TYPE == "HAIL FLOODING", "FLOOD")) %>%
+  mutate(EVENT_TYPE = replace(EVENT_TYPE, EVENT_TYPE == "FLOODING", "FLOOD")) %>%
+  mutate(EVENT_TYPE = replace(EVENT_TYPE, EVENT_TYPE == "HAIL/ICY ROADS", "HAIL")) %>%
+  mutate(EVENT_TYPE = replace(EVENT_TYPE, EVENT_TYPE == "HEAVY WIND", "HIGH WIND")) %>%
+  mutate(EVENT_TYPE = replace(EVENT_TYPE, EVENT_TYPE == "HIGH SNOW", "HEAVY SNOW")) %>%
+  mutate(EVENT_TYPE = replace(EVENT_TYPE, EVENT_TYPE %in% c("HURRICANE",
+                                                            "HURRICANE (TYPHOON)"), "HURRICANE/TYPHOON")) %>%
+  mutate(EVENT_TYPE = replace(EVENT_TYPE, EVENT_TYPE == "LANDSLIDE", "DEBRIS FLOW")) %>%         
+  mutate(EVENT_TYPE = replace(EVENT_TYPE, EVENT_TYPE == "MARINE DENSE FOG", "DENSE FOG")) %>%
+  mutate(EVENT_TYPE = replace(EVENT_TYPE, EVENT_TYPE == "MARINE HURRICANE/TYPHOON", "HURRICANE/TYPHOON")) %>%
+  mutate(EVENT_TYPE = replace(EVENT_TYPE, EVENT_TYPE == "MARINE LIGHTNING", "LIGHTNING")) %>%
+  mutate(EVENT_TYPE = replace(EVENT_TYPE, EVENT_TYPE == "MARINE TROPICAL DEPRESSION", "TROPICAL DEPRESSION")) %>%
+  mutate(EVENT_TYPE = replace(EVENT_TYPE, EVENT_TYPE == "MARINE TROPICAL STORM", "TROPICAL STORM")) %>%
+  mutate(EVENT_TYPE = replace(EVENT_TYPE, EVENT_TYPE == "SNEAKERWAVE", "TSUNAMI")) %>%
+  mutate(EVENT_TYPE = replace(EVENT_TYPE, EVENT_TYPE == "STORM SURGE/TIDE", "STORM TIDE")) %>%
+  mutate(EVENT_TYPE = replace(EVENT_TYPE, EVENT_TYPE %in% c("THUNDERSTORM WIND/ TREE", 
+                                                            "THUNDERSTORM WIND/ TREES", 
+                                                            "THUNDERSTORM WINDS FUNNEL CLOU", 
+                                                            "THUNDERSTORM WINDS HEAVY RAIN", 
+                                                            "THUNDERSTORM WINDS LIGHTNING", 
+                                                            "THUNDERSTORM WINDS/HEAVY RAIN", 
+                                                            "THUNDERSTORM WINDS/ FLOOD", 
+                                                            "THUNDERSTORM WINDS/FLASH FLOOD", 
+                                                            "THUNDERSTORM WINDS/FLOODING"), "THUNDERSTORM WIND")) %>%
+  mutate(EVENT_TYPE = replace(EVENT_TYPE, EVENT_TYPE %in% c("TORNADO/WATERSPOUT",
+                                                            "TORNADOES, TSTM WIND, HAIL"), "TORNADO")) %>%
+  mutate(EVENT_TYPE = replace(EVENT_TYPE, EVENT_TYPE == "VOLCANIC ASHFALL", "VOLCANIC ASH")) %>%
+  filter(! (EVENT_TYPE == "NORTHERN LIGHTS" | EVENT_TYPE == "OTHER")) %>%
+  filter(YEAR %in% 1996:2016) %>%
+  select(EVENT_ID, YEAR, STATE, EVENT_TYPE, DEATHS_DIRECT)
+
+summaryData <- df %>%
+  group_by(EVENT_TYPE) %>%
+  summarize(count = n(), fatalities = sum(DEATHS_DIRECT)) %>%
+  arrange(desc(fatalities)) %>%
+  select(EVENT_TYPE, fatalities)
+
+ggplot(summaryData, aes(x = reorder(EVENT_TYPE, - fatalities), y = fatalities)) + 
+  geom_bar(stat = "identity") + 
+  labs(title = "Deadliest Weather Events: 1996-2016", 
+       x = "Event Type", 
+       y = "Fatalities") + 
+  theme(axis.text.x = element_text(angle = - 90, hjust = 0))
+```
