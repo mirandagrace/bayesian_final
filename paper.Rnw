@@ -125,6 +125,7 @@ Because this posterior does not suggest any obvious proposal distributions I wil
   \bibitem{dataset} NOAA's Severe Weather Data Inventory, 
     \url{https://www1.ncdc.noaa.gov/pub/data/swdi/stormevents/csvfiles/}. 
     Accessed April 2017.
+  \bibitem{ZIP} Bayarri, M., Berger, J., Datta, G. (2008). Objective testing of Poisson versus inflated Poisson models. IMS 	Collections, 3, 105-121. 
 \end{thebibliography}
 \clearpage
 \appendix
@@ -152,7 +153,6 @@ p(r,\sigma, p|X)\propto&\left(\sigma + (1-\sigma)(1-p)^r\right)^Z(1-\sigma)^{N-Z
 \intertext{I am now going to take the log of the posterior because it helps with computation}
 \ln\left(p(r,\sigma, p|X)\right)\propto&Z\ln\left(1 + (1/\sigma-1)(1-p)^r\right) + Z\ln(\sigma) + (N-Z)\ln(1-\sigma)+(N-Z)r\ln(1-p)\\
 &+\sum_{i=1}^NX_i\ln(p)-\ln(r)/2-N\ln(\Gamma(r))+\sum_{i=1}^N\ln(\Gamma(r+X_i))
-%\propto\left(\sigma + (1-\sigma)(1-p)^r\right)^Z(1-\sigma)^{N-Z}(1-p)^{(N-Z)r}p^{\sum_{i=1}^NX_i}r^{-1/2}\prod_{i=1}^\left(\frac{\Gamma(r+X_i)}{\Gamma(r)}\right)\\
 \end{align*}
 
 \end{document}

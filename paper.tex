@@ -94,6 +94,36 @@ We will derive and fit a model for each of the four distributions and see if the
 
 \subsection{Zero Inflated Poisson}
 \label{ss:mZiPoisson}
+The Zero Inflated Poisson (ZIP) model has two parameters. The parameter p is the probability of a structural zero, and $\lambda$ corresponds to the parameter in a typical Poisson model. For a single observation x, the probability density is:
+
+\[
+p(x|p, \lambda) = pI_{x=0}(x) + (1-p)\frac{e^{-\lambda}\lambda^x}{x!}
+\]
+
+
+\noindent We can write the likelihood as follows:
+$$
+L(p, \lambda|X) = \prod_{x_i=0}\bigg[p+(1-p)\frac{e^{-\lambda}\lambda^{x_i}}{x_i!}\bigg]\prod_{x_i \ne 0}\bigg[(1-p)\frac{e^{-\lambda}\lambda^{x_i}}{x_i!}\bigg]
+$$
+
+\noindent Bayarri, Berger, and Datta (2008) suggest using the prior distribution $\pi(\lambda, p) \propto \frac{1}{\sqrt{\lambda}}I(0<p<1)$. This gives us the following posterior 
+
+\[
+\prod_{x_i=0}\bigg[p+(1-p)\frac{e^{-\lambda}\lambda^{x_i}}{x_i!}\bigg]\prod_{x_i \ne 0}\bigg[(1-p)\frac{e^{-\lambda}\lambda^{x_i - 1/2}}{x_i!}\bigg]
+\]
+
+\noindent In obtaining our full conditionals, we can simplify this slightly to obtain the following:
+
+\[
+p(\lambda|X, p) \propto \prod_{x_i=0}\bigg[p+(1-p)\frac{e^{-\lambda}\lambda^{x_i}}{x_i!}\bigg]\prod_{x_i \ne 0}\bigg[e^{-\lambda}\lambda^{x_i - 1/2}\bigg]
+\]
+
+\[
+p(p|X, \lambda) \propto \prod_{x_i=0}\bigg[p+(1-p)\frac{e^{-\lambda}\lambda^{x_i}}{x_i!}\bigg]\prod_{x_i \ne 0}\bigg[(1-p)\bigg]
+\]
+
+\noindent Neither of these distributions is recognizable. We can use a Metropolis-Hastings algorithm to sample from both of them. We will use a beta distribution as a proposal for p, and a gamma for $\lambda$. We will tune them to obtain a better acceptance rate. 
+
 
 \subsection{Zero Inflated Negative Binomial}
 \label{ss:mZiNBinom}
@@ -126,6 +156,7 @@ Because this posterior does not suggest any obvious proposal distributions I wil
   \bibitem{dataset} NOAA's Severe Weather Data Inventory, 
     \url{https://www1.ncdc.noaa.gov/pub/data/swdi/stormevents/csvfiles/}. 
     Accessed April 2017.
+   \bibitem{ZIP} Bayarri, M., Berger, J., Datta, G. (2008). Objective testing of Poisson versus inflated Poisson models. IMS 	Collections, 3, 105-121. 
 \end{thebibliography}
 \clearpage
 \appendix
@@ -153,7 +184,6 @@ p(r,\sigma, p|X)\propto&\left(\sigma + (1-\sigma)(1-p)^r\right)^Z(1-\sigma)^{N-Z
 \intertext{I am now going to take the log of the posterior because it helps with computation}
 \ln\left(p(r,\sigma, p|X)\right)\propto&Z\ln\left(1 + (1/\sigma-1)(1-p)^r\right) + Z\ln(\sigma) + (N-Z)\ln(1-\sigma)+(N-Z)r\ln(1-p)\\
 &+\sum_{i=1}^NX_i\ln(p)-\ln(r)/2-N\ln(\Gamma(r))+\sum_{i=1}^N\ln(\Gamma(r+X_i))
-%\propto\left(\sigma + (1-\sigma)(1-p)^r\right)^Z(1-\sigma)^{N-Z}(1-p)^{(N-Z)r}p^{\sum_{i=1}^NX_i}r^{-1/2}\prod_{i=1}^\left(\frac{\Gamma(r+X_i)}{\Gamma(r)}\right)\\
 \end{align*}
 
 \end{document}
