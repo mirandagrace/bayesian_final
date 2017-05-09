@@ -12,3 +12,9 @@ paper.pdf
 *.aux
 *.bbl
 *.blg
+
+paper.pdf
+
+paper-concordance.tex
+
+*.aux

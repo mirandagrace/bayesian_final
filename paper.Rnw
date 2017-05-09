@@ -58,6 +58,7 @@
 
 \setlength{\marginparwidth}{2cm}
 \begin{document}
+\SweaveOpts{concordance=TRUE}
 \begin{center}
 	\vspace{0.1cm}
 	\textsc{\LARGE MATH 640 Final Project} \\[0.1cm]
