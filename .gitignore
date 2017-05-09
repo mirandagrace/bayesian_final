@@ -1,4 +1,5 @@
 .Rproj.user
+.DS_Store
 .Rhistory
 .RData
 storm_details.csv
@@ -6,3 +7,8 @@ storm_details.csv
 *.log
 *.zip
 *.gz
+*.out
+paper.pdf
+*.aux
+*.bbl
+*.blg

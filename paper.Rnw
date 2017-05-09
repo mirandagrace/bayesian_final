@@ -6,6 +6,7 @@
 \usepackage{enumerate}
 \usepackage{booktabs}
 \usepackage{placeins}
+\usepackage{cite}
 \usepackage{caption}
 \usepackage{subcaption}
 \usepackage{wrapfig}
@@ -57,7 +58,6 @@
 
 \setlength{\marginparwidth}{2cm}
 \begin{document}
-\SweaveOpts{concordance=TRUE}
 \begin{center}
 	\vspace{0.1cm}
 	\textsc{\LARGE MATH 640 Final Project} \\[0.1cm]
@@ -66,7 +66,7 @@
 \section{Introduction}
 \label{s:intro}
 This analysis will be done on a data set of a variety of measurements about severe weather in the United States. 
-The data set contains a variety of measures from severe weather events in the United States from 1996-2016. 
+The data set contains a variety of measures from severe weather events in the United States from 1996-2016. It was taken from the NOAA website \cite{dataset}.
 For this project we focused on the deaths directly attributable to the event.
 Understanding how and at what rate severe weather events become lethal in the United States has tremendous public health impacts.
 In this paper we compare four possible models for the deaths: The traditional Poisson and negative binomial distributions, as well as the zero inflated variant of each.
@@ -93,6 +93,35 @@ We will derive and fit a model for each of the four distributions and see if the
 
 \subsection{Zero Inflated Poisson}
 \label{ss:mZiPoisson}
+The Zero Inflated Poisson (ZIP) model has two parameters. The parameter p is the probability of a structural zero, and $\lambda$ corresponds to the parameter in a typical Poisson model. For a single observation x, the probability density is:
+
+\[
+p(x|p, \lambda) = pI_{x=0}(x) + (1-p)\frac{e^{-\lambda}\lambda^x}{x!}
+\]
+
+
+\noindent We can write the likelihood as follows:
+$$
+L(p, \lambda|X) = \prod_{x_i=0}\bigg[p+(1-p)\frac{e^{-\lambda}\lambda^{x_i}}{x_i!}\bigg]\prod_{x_i \ne 0}\bigg[(1-p)\frac{e^{-\lambda}\lambda^{x_i}}{x_i!}\bigg]
+$$
+
+\noindent Bayarri, Berger, and Datta (2008) \cite{ZIP} suggest using the prior distribution $\pi(\lambda, p) \propto \frac{1}{\sqrt{\lambda}}I(0<p<1)$. This gives us the following posterior 
+
+\[
+\prod_{x_i=0}\bigg[p+(1-p)\frac{e^{-\lambda}\lambda^{x_i}}{x_i!}\bigg]\prod_{x_i \ne 0}\bigg[(1-p)\frac{e^{-\lambda}\lambda^{x_i - 1/2}}{x_i!}\bigg]
+\]
+
+\noindent In obtaining our full conditionals, we can simplify this slightly to obtain the following:
+
+\[
+p(\lambda|X, p) \propto \prod_{x_i=0}\bigg[p+(1-p)\frac{e^{-\lambda}\lambda^{x_i}}{x_i!}\bigg]\prod_{x_i \ne 0}\bigg[e^{-\lambda}\lambda^{x_i - 1/2}\bigg]
+\]
+
+\[
+p(p|X, \lambda) \propto \prod_{x_i=0}\bigg[p+(1-p)\frac{e^{-\lambda}\lambda^{x_i}}{x_i!}\bigg]\prod_{x_i \ne 0}\bigg[(1-p)\bigg]
+\]
+
+\noindent Neither of these distributions is recognizable. We can use a Metropolis-Hastings algorithm to sample from both of them. We will use a beta distribution as a proposal for p, and a gamma for $\lambda$. We will tune them to obtain a better acceptance rate. 
 
 \subsection{Zero Inflated Negative Binomial}
 \label{ss:mZiNBinom}
@@ -121,7 +150,7 @@ Because this posterior does not suggest any obvious proposal distributions I wil
 \section{Discussion}
 \label{s:discussion}
 
-\begin{thebibliography}{1}
+\begin{thebibliography}{2}
   \bibitem{dataset} NOAA's Severe Weather Data Inventory, 
     \url{https://www1.ncdc.noaa.gov/pub/data/swdi/stormevents/csvfiles/}. 
     Accessed April 2017.
