@@ -87,43 +87,39 @@ We will derive and fit a model for each of the four distributions and see if the
 
 \subsection{Poisson}
 \label{ss:mPoisson}
+The Poisson model has one parameter, $\lambda$ represents the expected number of occurances of the event of interest. For a single random variable $x$, the probability density is:
+$$p(x|\lambda)=\frac{\lambda^xe^{-\lambda}}{x!}.$$
+Thus the likelihood for a sum of Poisson random variables can be written as follows:
+$$\mathcal{L}(X|\lambda)\propto\lambda^{n\bar{X}}e^{-n\lambda}.$$ 
+Since we want the data to speak for itself, we will use a non-informative random variable, namely, Jeffreys' prior. For the Poisson distribtion this is given as follows:
+$$\pi(\lambda)\propto\lambda^{1/2-1}e^{-0\cdot\lambda}.$$
+We recognize this as the kernel of an improper gamma distribution. Combining the likelihood and the prior distribtion yields the following posterior distribution:
+$$p(\lambda|X)=\lambda^{n\bar{X}+1/2-1}e^{-n\lambda}.$$
+We recognize this as the kernel of a gamma distribution, namely
+$$\lambda|X\sim\mathcal{G}amma(n\bar{X}+1/2,n).$$
 
 \subsection{Negative Binomial}
 \label{ss:mNBinom}
+The Negative Binomial model has two parameters, $r,p$ represents the expected number of occurances of the event of interest. For a single random variable $x$, the probability density is:
+$$p(X|r,p)=\frac{\Gamma(r+x)}{\Gamma(r)x!}p^{x}(1-p)^{r}.$$
 
+Thus the likelihood for a sum of Negative Binomial random variables can be written as follows:
+$$\mathcal{L}(X|r,p)=\Bigg[\prod_{i=1}^n\frac{\Gamma(r+x_i)}{\Gamma(r)x_i!}\Bigg]p^{n\bar{X}}(1-p)^{nr}.$$
+Since we want the data to speak for itself, we will use a non-informative random variable, namely, Jeffreys' prior. For the Poisson distribtion this is given as follows:
+$$\pi(r,p)=r^{1/2}p^{-1}(1-2)^{-1/2}.$$
+Combining the likelihood and the prior distribtion yields the following posterior distribution:
+$$p(r,p|X)=\Bigg\{\Bigg[\prod_{i=1}^n\frac{\Gamma(r+x_i)}{\Gamma(r)x_i!}\Bigg]p^{n\bar{X}}(1-p)^{nr}\Bigg\}\Bigg\{r^{1/2}p^{-1}(1-2)^{-1/2}\Bigg\}$$
+From this posterior we obtain the full conditionals. First consider $p|r,X$:
+$$p(p|r,X)\propto p^{n\bar{x}-1}(1-p)^{nr+1/2-1}$$
+We recognize this as the kernel of a beta distribution, namely
+
+$$p|r,X\sim\mathcal{B}eta(n\bar{X},nr+1/2).$$
+Next consider $r|p,X$:
+$$p(r|p,X)\propto\bigg[\prod_{i=1}^n\Gamma(r+x_i)\bigg]\Gamma(r)^{-n}(1-p)^{nr}r^{1/2}$$
+This is not a recognized distribtion. So if we wish to make inferences on $r$ we must use a Metropolis algorithm to sample from it.
 
 \subsection{Zero Inflated Poisson}
 \label{ss:mZiPoisson}
-The Zero Inflated Poisson (ZIP) model has two parameters. The parameter p is the probability of a structural zero, and $\lambda$ corresponds to the parameter in a typical Poisson model. For a single observation x, the probability density is:
-
-\[
-p(x|p, \lambda) = pI_{x=0}(x) + (1-p)\frac{e^{-\lambda}\lambda^x}{x!}
-\]
-
-
-\noindent We can write the likelihood as follows:
-$$
-L(p, \lambda|X) = \prod_{x_i=0}\bigg[p+(1-p)\frac{e^{-\lambda}\lambda^{x_i}}{x_i!}\bigg]\prod_{x_i \ne 0}\bigg[(1-p)\frac{e^{-\lambda}\lambda^{x_i}}{x_i!}\bigg]
-$$
-
-\noindent Bayarri, Berger, and Datta (2008) suggest using the prior distribution $\pi(\lambda, p) \propto \frac{1}{\sqrt{\lambda}}I(0<p<1)$. This gives us the following posterior 
-
-\[
-\prod_{x_i=0}\bigg[p+(1-p)\frac{e^{-\lambda}\lambda^{x_i}}{x_i!}\bigg]\prod_{x_i \ne 0}\bigg[(1-p)\frac{e^{-\lambda}\lambda^{x_i - 1/2}}{x_i!}\bigg]
-\]
-
-\noindent In obtaining our full conditionals, we can simplify this slightly to obtain the following:
-
-\[
-p(\lambda|X, p) \propto \prod_{x_i=0}\bigg[p+(1-p)\frac{e^{-\lambda}\lambda^{x_i}}{x_i!}\bigg]\prod_{x_i \ne 0}\bigg[e^{-\lambda}\lambda^{x_i - 1/2}\bigg]
-\]
-
-\[
-p(p|X, \lambda) \propto \prod_{x_i=0}\bigg[p+(1-p)\frac{e^{-\lambda}\lambda^{x_i}}{x_i!}\bigg]\prod_{x_i \ne 0}\bigg[(1-p)\bigg]
-\]
-
-\noindent Neither of these distributions is recognizable. We can use a Metropolis-Hastings algorithm to sample from both of them. We will use a beta distribution as a proposal for p, and a gamma for $\lambda$. We will tune them to obtain a better acceptance rate. 
-
 
 \subsection{Zero Inflated Negative Binomial}
 \label{ss:mZiNBinom}
@@ -156,7 +152,6 @@ Because this posterior does not suggest any obvious proposal distributions I wil
   \bibitem{dataset} NOAA's Severe Weather Data Inventory, 
     \url{https://www1.ncdc.noaa.gov/pub/data/swdi/stormevents/csvfiles/}. 
     Accessed April 2017.
-   \bibitem{ZIP} Bayarri, M., Berger, J., Datta, G. (2008). Objective testing of Poisson versus inflated Poisson models. IMS 	Collections, 3, 105-121. 
 \end{thebibliography}
 \clearpage
 \appendix
