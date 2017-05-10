@@ -1,0 +1,162 @@
+---
+title: "R Notebook"
+output:
+  pdf_document: default
+  html_notebook: default
+---
+```{r warning = FALSE, message = FALSE, echo = FALSE}
+setwd("/users/nikopaulson/documents/homework/georgetown/math640")
+library(tidyverse)
+
+storm <- read_csv("storm_details.csv") 
+
+events_from_codebook <- c("Astronomical Low Tide", "Avalanche", "Blizzard", "Coastal Flood", "Cold/Wind Chill", "Debris Flow", "Dense Fog", "Dense Smoke", "Drought", "Dust Devil", "Dust Storm", "Excessive Heat", "Extreme Cold/Wind Chill", "Flash Flood", "Flood", "Freezing Fog", "Frost/Freeze", "Funnel Cloud", "Hail", "Heat", "Heavy Rain", "Heavy Snow", "High Surf", "High Wind", "Hurricane/Typhoon", "Ice Storm", "Lakeshore Flood", "Lake-Effect Snow", "Lightning", "Marine Hail", "Marine High Wind", "Marine Strong Wind", "Marine Thunderstorm Wind", "Rip Current", "Seiche", "Sleet", "Storm Tide", "Strong Wind", "Thunderstorm Wind", "Tornado", "Tropical Depression", "Tropical Storm", "Tsunami", "Volcanic Ash", "Waterspout", "Wildfire", "Winter Storm", "Winter Weather")
+
+have <- toupper(sort(unique(storm$EVENT_TYPE)))
+want <- toupper(events_from_codebook)
+must_rename <- have[which(have %in% want == FALSE)]
+
+df <- storm %>%
+  mutate(EVENT_TYPE = toupper(EVENT_TYPE)) %>%
+  mutate(EVENT_TYPE = replace(EVENT_TYPE, EVENT_TYPE == "HAIL FLOODING", "FLOOD")) %>%
+  mutate(EVENT_TYPE = replace(EVENT_TYPE, EVENT_TYPE == "FLOODING", "FLOOD")) %>%
+  mutate(EVENT_TYPE = replace(EVENT_TYPE, EVENT_TYPE == "HAIL/ICY ROADS", "HAIL")) %>%
+  mutate(EVENT_TYPE = replace(EVENT_TYPE, EVENT_TYPE == "HEAVY WIND", "HIGH WIND")) %>%
+  mutate(EVENT_TYPE = replace(EVENT_TYPE, EVENT_TYPE == "HIGH SNOW", "HEAVY SNOW")) %>%
+  mutate(EVENT_TYPE = replace(EVENT_TYPE, EVENT_TYPE %in% c("HURRICANE",
+                                                            "HURRICANE (TYPHOON)"), "HURRICANE/TYPHOON")) %>%
+  mutate(EVENT_TYPE = replace(EVENT_TYPE, EVENT_TYPE == "LANDSLIDE", "DEBRIS FLOW")) %>%         
+  mutate(EVENT_TYPE = replace(EVENT_TYPE, EVENT_TYPE == "MARINE DENSE FOG", "DENSE FOG")) %>%
+  mutate(EVENT_TYPE = replace(EVENT_TYPE, EVENT_TYPE == "MARINE HURRICANE/TYPHOON", "HURRICANE/TYPHOON")) %>%
+  mutate(EVENT_TYPE = replace(EVENT_TYPE, EVENT_TYPE == "MARINE LIGHTNING", "LIGHTNING")) %>%
+  mutate(EVENT_TYPE = replace(EVENT_TYPE, EVENT_TYPE == "MARINE TROPICAL DEPRESSION", "TROPICAL DEPRESSION")) %>%
+  mutate(EVENT_TYPE = replace(EVENT_TYPE, EVENT_TYPE == "MARINE TROPICAL STORM", "TROPICAL STORM")) %>%
+  mutate(EVENT_TYPE = replace(EVENT_TYPE, EVENT_TYPE == "SNEAKERWAVE", "TSUNAMI")) %>%
+  mutate(EVENT_TYPE = replace(EVENT_TYPE, EVENT_TYPE == "STORM SURGE/TIDE", "STORM TIDE")) %>%
+  mutate(EVENT_TYPE = replace(EVENT_TYPE, EVENT_TYPE %in% c("THUNDERSTORM WIND/ TREE", 
+                                                            "THUNDERSTORM WIND/ TREES", 
+                                                            "THUNDERSTORM WINDS FUNNEL CLOU", 
+                                                            "THUNDERSTORM WINDS HEAVY RAIN", 
+                                                            "THUNDERSTORM WINDS LIGHTNING", 
+                                                            "THUNDERSTORM WINDS/HEAVY RAIN", 
+                                                            "THUNDERSTORM WINDS/ FLOOD", 
+                                                            "THUNDERSTORM WINDS/FLASH FLOOD", 
+                                                            "THUNDERSTORM WINDS/FLOODING"), "THUNDERSTORM WIND")) %>%
+  mutate(EVENT_TYPE = replace(EVENT_TYPE, EVENT_TYPE %in% c("TORNADO/WATERSPOUT",
+                                                            "TORNADOES, TSTM WIND, HAIL"), "TORNADO")) %>%
+  mutate(EVENT_TYPE = replace(EVENT_TYPE, EVENT_TYPE == "VOLCANIC ASHFALL", "VOLCANIC ASH")) %>%
+  filter(! (EVENT_TYPE == "NORTHERN LIGHTS" | EVENT_TYPE == "OTHER")) %>%
+  filter(YEAR %in% 1996:2016) %>%
+  select(EVENT_ID, YEAR, STATE, EVENT_TYPE, DEATHS_DIRECT)
+
+summaryData <- df %>%
+  group_by(EVENT_TYPE) %>%
+  summarize(count = n(), fatalities = sum(DEATHS_DIRECT)) %>%
+  arrange(desc(fatalities)) %>%
+  select(EVENT_TYPE, fatalities)
+
+ggplot(summaryData, aes(x = reorder(EVENT_TYPE, - fatalities), y = fatalities)) + 
+  geom_bar(stat = "identity") + 
+  labs(title = "Deadliest Weather Events: 1996-2016", 
+       x = "Event Type", 
+       y = "Fatalities") + 
+  theme(axis.text.x = element_text(angle = - 90, hjust = 0))
+```
+
+```{r echo = FALSE}
+summaryData2 <- df %>%
+  filter(EVENT_TYPE == "TORNADO") %>%
+  group_by(YEAR) %>%
+  summarize(TOR_COUNT = n(), DEATHS = sum(DEATHS_DIRECT)) 
+```
+
+#POISSON
+
+Likelihood:      $\mathcal{L}(X|\lambda)\propto\lambda^{n\bar{x}}e^{-n\lambda}$ 
+
+Jeffreys' Prior: $\pi(\lambda)=\lambda^{1/2-1}e^{-0\cdot\lambda}$
+
+Posterior:       $p(\lambda|X)=\lambda^{n\bar{x}+1/2-1}e^{-n\lambda}$ 
+
+So the posterior on lambda with non-informative prior is $\mathcal{G}amma(n\bar{x}+1/2,n)$.
+
+```{r}
+set.seed(05092017)
+
+df_tor <- df %>%
+  filter(EVENT_TYPE == "TORNADO")
+
+X <- df_tor$DEATHS_DIRECT
+alpha <- sum(X) + 1 / 2
+beta <- length(X)
+B <- 20000
+
+post_lambda <- rgamma(B, alpha, beta)
+ci_lambda <- quantile(post_lambda, c(0.025, 0.975))
+```
+
+Using the data based off of 20000 posterior samples, we get the posterior median for $\lambda$ is `r round(median(post_lambda), 4)` with a 95% credible interval of `r round(ci_lambda[1], 4)` to `r round(ci_lambda[2], 4)`. The posterior denisty is in the figure below:
+
+```{r echo = FALSE}
+plot(density(post_lambda),
+     xlab = expression(lambda),
+     ylab = expression(paste("p(", lambda, "|x)")),
+     main = "Density plot with 95% credible interval", 
+     lwd = 2,
+     col = "blue")
+credInt <- quantile(post_lambda, probs = c(0.025, 0.975)) 
+densOut <- density(post_lambda)
+idStart <- max(which(densOut$x < credInt[1])) + 1 
+idEnd <- min(which(densOut$x > credInt[2])) - 1
+gx <- densOut$x[idStart : idEnd]
+gy <- densOut$y[idStart : idEnd]
+px <- rep(0, length(gy))
+polygon(c(gx, rev(gx)), c(px, rev(gy)), border = FALSE, col = rgb(0, 0, 1, alpha = 0.5)) 
+abline(h = 0)
+```
+
+#NEGATIVE BINOMIAL
+
+Likelihood: $\mathcal{L}(X|r,p)=\Bigg[\prod_{i=1}^n\frac{\Gamma(r+x_i)}{\Gamma(r)x_i!}\Bigg]p^{n\bar{x}}(1-p)^{nr}$
+
+Jeffreys' Prior: $\pi(r,p)=r^{1/2}p^{-1}(1-2)^{-1/2}$
+
+Full Posterior: $p(r,p|X)=\mathcal{L}(X|r,p)\pi(r,p)$
+
+Conditional of p: $p(p|r,X)\propto p^{n\bar{x}-1}(1-p)^{nr+1/2-1}$ 
+
+Conditional of r: $p(r|p,X)\propto\big[\prod_{i=1}^n\Gamma(r+x_i)\big]\Gamma(r)^{-n}(1-p)^{nr}r^{1/2}$
+
+```{r}
+set.seed(05092017)
+
+X <- df_tor$DEATHS_DIRECT
+
+r <- 1 
+alpha <- sum(X)
+beta <- length(X) * r + 1 / 2
+B <- 20000
+
+post_p <- rbeta(B, alpha, beta)
+ci_p <- quantile(post_p, c(0.025, 0.975))
+```
+
+Using the data based off of 20000 posterior samples, we get the posterior median for $p$ is `r round(median(post_p), 4)` with a 95% credible interval of `r round(ci_p[1], 4)` to `r round(ci_p[2], 4)`. The posterior denisty is in the figure below:
+
+```{r echo = FALSE}
+plot(density(post_p),
+     xlab = expression(p),
+     ylab = expression(paste("p(", p, "|r,x)")),
+     main = "Density plot with 95% credible interval", 
+     lwd = 2,
+     col = "blue")
+credInt <- quantile(post_p, probs = c(0.025, 0.975)) 
+densOut <- density(post_p)
+idStart <- max(which(densOut$x < credInt[1])) + 1 
+idEnd <- min(which(densOut$x > credInt[2])) - 1
+gx <- densOut$x[idStart : idEnd]
+gy <- densOut$y[idStart : idEnd]
+px <- rep(0, length(gy))
+polygon(c(gx, rev(gx)), c(px, rev(gy)), border = FALSE, col = rgb(0, 0, 1, alpha = 0.5)) 
+abline(h = 0)
+```
