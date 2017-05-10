@@ -386,6 +386,128 @@ This appendix includes the code used to implement the models.
 \label{a:cZINB}
 <<zinbsampler-source, echo=TRUE, ref.label='zinbsampler'>>=
 @
+\subsection{Zero Inflated Poisson code}
+<<eval = FALSE>>=
+library(dplyr)
+tornado <- data %>% filter(EVENT_TYPE == "Tornado") %>% select(DEATHS_DIRECT)
+flood <- data %>% filter(EVENT_TYPE == "Flash Flood") %>% select(DEATHS_DIRECT)
+
+# Precompute values to use in posterior function
+zeros <- tornado %>% filter(DEATHS_DIRECT == 0) %>% select(DEATHS_DIRECT)
+ones <- tornado %>% filter(DEATHS_DIRECT != 0) %>% select(DEATHS_DIRECT)
+n <- nrow(ones)
+t0_exp <- (zeros)/factorial(zeros)
+l_t1_exp <- ones-1/2
+
+# Define Posterior Functions
+log_lam <- function(y, p, lambda){
+  t0 <- sum(log(p + (1-p)*exp(-1*lambda)*(lambda+2e-10)^t0_exp))
+  t1 <- sum(log(exp(-1*lambda)*lambda^l_t1_exp))
+  return(t0+t1)
+}
+
+log_p <- function(y, p, lambda){
+  t0 <- sum(log(p + (1-p)*exp(-1*lambda)*(lambda+2e-10)^t0_exp))
+  t1_vec <- rep(1-p, n)
+  t1 <- sum(log(t1_vec))
+  return(t0+t1)
+}
+
+### Sampler for Tornado
+set.seed(2011)
+
+l_last <- 1
+p_last <- .98
+
+B <- 20000
+lambdas <- rep(0, B)
+ps <- rep(0, B)
+
+l_accept <- rep(FALSE, B)
+p_accept <- rep(FALSE, B)
+
+for(t in 1:B){
+  lambda <- rgamma(1, 3, 2)
+  p <- rbeta(1, 1940, 60)
+  ro_lam <- log_lam(tornado, p_last, lambda) - log(dgamma(lambda, 3, 2)) -
+    log_lam(tornado, p_last, l_last) + log(dgamma(l_last, 3, 2))
+  ro_p <- log_p(tornado, p, l_last) - log(dbeta(p, 1940, 60)) -
+    log_p(tornado, p_last, l_last) + log(dbeta(p_last, 1940, 60))
+  U_lambda <- runif(1)
+  U_p <- runif(1)
+  if(log(U_lambda) < min(0, ro_lam)){
+    print(TRUE)
+    lambdas[t] <- lambda
+    lambda_last <- lambda
+    l_accept[t] <- TRUE
+  } else{
+    print(FALSE)
+    lambdas[t] <- lambda_last
+  }
+  
+  if(log(U_p) < min(0, ro_p)){
+    print(TRUE)
+    ps[t] <- p
+    p_last <- p 
+    p_accept[t] <- TRUE
+  } else{
+    print(FALSE)
+    ps[t] <- p_last
+  }
+}
+
+# Do the same for flash floods
+
+# Update values for likelihood function
+zeros <- flood %>% filter(DEATHS_DIRECT == 0) %>% select(DEATHS_DIRECT)
+ones <- flood %>% filter(DEATHS_DIRECT != 0) %>% select(DEATHS_DIRECT)
+n <- nrow(ones)
+t0_exp <- (zeros)/factorial(zeros)
+l_t1_exp <- ones-1/2
+
+# Sampler:
+set.seed(2012)
+l_last <- 1
+p_last <- .98
+B <- 20000
+lambdas <- rep(0, B)
+ps <- rep(0, B)
+l_accept <- rep(FALSE, B)
+p_accept <- rep(FALSE, B)
+for(t in 1:B){
+  print(paste0("t = ", as.character(t)))
+  lambda <- rgamma(1, 1, 2)
+  print(paste0("lambda = ", as.character(lambda)))
+  p <- rbeta(1, 2945, 55)
+  print(paste0("p = ", as.character(p)))
+  ro_lam <- log_lam(flood, p_last, lambda) - log(dgamma(lambda, 1, 2)) -
+    log_lam(flood, p_last, l_last) + log(dgamma(l_last, 1, 2))
+  ro_p <- log_p(flood, p, l_last) - log(dbeta(p, 2945, 55)) -
+    log_p(flood, p_last, l_last) + log(dbeta(p_last, 2945, 55))
+  U_lambda <- runif(1)
+  U_p <- runif(1)
+  if(log(U_lambda) < min(0, ro_lam)){
+    print(TRUE)
+    lambdas[t] <- lambda
+    lambda_last <- lambda
+    l_accept[t] <- TRUE
+  } else{
+    print(FALSE)
+    lambdas[t] <- lambda_last
+  }
+  
+  if(log(U_p) < min(0, ro_p)){
+    print(TRUE)
+    ps[t] <- p
+    p_last <- p 
+    p_accept[t] <- TRUE
+  } else{
+    print(FALSE)
+    ps[t] <- p_last
+  }
+}
+@
+
 
 \section{Derivations}
 \label{a:derivation}
