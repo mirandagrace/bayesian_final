@@ -1,0 +1,199 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Beamer Presentation
+% LaTeX Template
+% Version 1.0 (10/11/12)
+%
+% This template has been downloaded from:
+% http://www.LaTeXTemplates.com
+%
+% License:
+% CC BY-NC-SA 3.0 (http://creativecommons.org/licenses/by-nc-sa/3.0/)
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%----------------------------------------------------------------------------------------
+%	PACKAGES AND THEMES
+%----------------------------------------------------------------------------------------
+
+\documentclass{beamer}
+
+\mode<presentation> {
+	
+	% The Beamer class comes with a number of default slide themes
+	% which change the colors and layouts of slides. Below this is a list
+	% of all the themes, uncomment each in turn to see what they look like.
+	
+	\usetheme{default}
+	%\usetheme{AnnArbor}
+	%\usetheme{Antibes}
+	%\usetheme{Bergen}
+	%\usetheme{Berkeley}
+	%\usetheme{Berlin}
+	%\usetheme{Boadilla}
+	%\usetheme{CambridgeUS}
+	%\usetheme{Copenhagen}
+	%\usetheme{Darmstadt}
+	%\usetheme{Dresden}
+	%\usetheme{Frankfurt}
+	%\usetheme{Goettingen}
+	%\usetheme{Hannover}
+	%\usetheme{Ilmenau}
+	%\usetheme{JuanLesPins}
+	%\usetheme{Luebeck}
+	%\usetheme{Madrid}
+	%\usetheme{Malmoe}
+	%\usetheme{Marburg}
+	%\usetheme{Montpellier}
+	%\usetheme{PaloAlto}
+	%\usetheme{Pittsburgh}
+	%\usetheme{Rochester}
+	%\usetheme{Singapore}
+	%\usetheme{Szeged}
+	%\usetheme{Warsaw}
+	
+	% As well as themes, the Beamer class has a number of color themes
+	% for any slide theme. Uncomment each of these in turn to see how it
+	% changes the colors of your current slide theme.
+	
+	%\usecolortheme{albatross}
+	\usecolortheme{beaver}
+	%\usecolortheme{beetle}
+	%\usecolortheme{crane}
+	%\usecolortheme{dolphin}
+	%\usecolortheme{dove}
+	%\usecolortheme{fly}
+	%\usecolortheme{lily}
+	%\usecolortheme{orchid}
+	%\usecolortheme{rose}
+	%\usecolortheme{seagull}
+	%\usecolortheme{seahorse}
+	%\usecolortheme{whale}
+	%\usecolortheme{wolverine}
+	
+	%\setbeamertemplate{footline} % To remove the footer line in all slides uncomment this line
+	%\setbeamertemplate{footline}[page number] % To replace the footer line in all slides with a simple slide count uncomment this line
+	
+	%\setbeamertemplate{navigation symbols}{} % To remove the navigation symbols from the bottom of all slides uncomment this line
+}
+
+\usepackage{sidecap}%[capbesideposition=inside, facing=yes,capbesidesep=quad]
+\usepackage{graphicx} % Allows including images
+\usepackage{booktabs} % Allows the use of \toprule, \midrule and \bottomrule in tables
+%----------------------------------------------------------------------------------------
+%	TITLE PAGE
+%----------------------------------------------------------------------------------------
+
+\title[Four Models]{Four Models for Severe Weather Deaths} % The short title appears at the bottom of every slide, the full title is only on the title page
+
+\author{Jason Michaels (jam521), Niko Paulson (ndp32), \\Miranda Seitz-McLeese (mgs85) } % Your name
+%\institute[UCLA] % Your institution as it will appear on the bottom of every slide, may be shorthand to save space
+%{
+%	University of California \\ % Your institution for the title page
+%	\medskip
+%	\textit{john@smith.com} % Your email address
+%}
+\date{May 11, 2017} % Date, can be changed to a custom date
+
+\begin{document}
+	
+	\begin{frame}
+		\titlepage % Print the title page as the first slide
+	\end{frame}
+	
+	\begin{frame}
+		\frametitle{Overview} % Table of contents slide, comment this block out to remove it
+		\tableofcontents % Throughout your presentation, if you choose to use \section{} and \subsection{} commands, these will automatically be printed on this slide as an overview of your presentation
+	\end{frame}
+	
+	%----------------------------------------------------------------------------------------
+	%	PRESENTATION SLIDES
+	%----------------------------------------------------------------------------------------
+	\section{Introduction} 
+	\begin{frame}
+		\frametitle{Introduction: Goals and Motivation}
+	\end{frame}
+	\begin{frame}
+		\frametitle{Introduction: Data}
+		The data for this project was taken from the NOAA severe weather events dataset. 
+		In its original form this dataset includes a variety of measurements for all forms of severe weather in the United States dating from 1950. In the interest of time we restricted the dataset to:
+		\begin{itemize}
+			\item Deaths directly attributable to Tornadoes and Flash floods 
+			\item Occurred between 1996-2016
+		\end{itemize}
+	\end{frame}
+	\begin{frame}
+		\frametitle{Introduction: Base Models}
+		% description of negative binomials and poisson models
+	\end{frame}
+	\begin{frame}
+		\frametitle{Introduction: Zero Inflated models}
+		% overview of what a zero inflated models are 
+	\end{frame}
+	\begin{frame}
+		\frametitle{Introduction: Four Models}
+		% list the four models
+	\end{frame}
+	
+	\section{Negative Binomial Model}
+	\begin{frame}
+		\frametitle{Negative Binomial}
+		% Slide one
+	\end{frame}
+	\begin{frame}
+		\frametitle{Negative Binomial}
+		% Slide two
+	\end{frame}
+	
+	\section{Poisson Model}
+	\begin{frame}
+		\frametitle{Poisson Model}
+		% Slide one
+	\end{frame}
+	\begin{frame}
+		\frametitle{Poisson Model}
+		% Slide two
+	\end{frame}
+	
+	\section{Zero Inflated Poisson Model}
+	\begin{frame}
+		\frametitle{Zero Inflated Poisson Model}
+		% Slide one
+	\end{frame}
+	\begin{frame}
+		\frametitle{Zero Inflated Poisson Model}
+		% Slide two
+	\end{frame}
+	
+	\section{Zero Inflated Negative Binomial Model}
+	\begin{frame}
+		\frametitle{Zero Inflated Negative Binomial Model}
+		% Slide one
+	\end{frame}
+	\begin{frame}
+		\frametitle{Zero Inflated Negative Binomial Model}
+		% Slide two
+	\end{frame}
+	
+	\section{Conclusions}
+	\begin{frame}
+		\frametitle{Conclusions: Model Evaluation Table}
+		% Waic dic table goes here
+	\end{frame}
+	\begin{frame}
+		\frametitle{Conclusions: Interpreting the Best Model}
+		% Waic dic table goes here
+	\end{frame}
+	\begin{frame}
+		\frametitle{Conclusions: Future Work}
+		% List of things we might have done if we'd had time
+		\begin{enumerate}
+			\item{Re parameterize the ZINB model/look into other techniques.}
+			\item{See if the results hold on other extreme weather events.}
+		\end{enumerate}
+	\end{frame}
+	\begin{frame}
+		\frametitle{Conclusions}
+		Questions?
+	\end{frame}
+	
+\end{document} 
