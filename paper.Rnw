@@ -365,7 +365,7 @@ Model & DIC &WAIC & DIC &WAIC\\
 \midrule
 Poisson & P FLOOD DIC& P FLOOD WAIC &P TORNADO DIC&P TORNADO WAIC\\
 Negative Binomial & NB FLOOD DIC& NB FLOOD WAIC &NB TORNADO DIC&NB TORNADO WAIC\\
-ZIP & 3845.915& ZIP FLOOD WAIC &4759.998 &ZIP TORNADO WAIC\\
+ZIP & 10454.860& ZIP FLOOD WAIC &8727.647 &ZIP TORNADO WAIC\\
 ZINB & \Sexpr{flood.dic.zinb}& -- &\Sexpr{tornado.dic.zinb}&--\\
 \bottomrule
 \end{tabular}
