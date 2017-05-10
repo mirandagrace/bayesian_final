@@ -1,4 +1,53 @@
-\documentclass{article}
+\documentclass{article}\usepackage[]{graphicx}\usepackage[]{color}
+%% maxwidth is the original width if it is less than linewidth
+%% otherwise use linewidth (to make sure the graphics do not exceed the margin)
+\makeatletter
+\def\maxwidth{ %
+  \ifdim\Gin@nat@width>\linewidth
+    \linewidth
+  \else
+    \Gin@nat@width
+  \fi
+}
+\makeatother
+
+\definecolor{fgcolor}{rgb}{0.345, 0.345, 0.345}
+\newcommand{\hlnum}[1]{\textcolor[rgb]{0.686,0.059,0.569}{#1}}%
+\newcommand{\hlstr}[1]{\textcolor[rgb]{0.192,0.494,0.8}{#1}}%
+\newcommand{\hlcom}[1]{\textcolor[rgb]{0.678,0.584,0.686}{\textit{#1}}}%
+\newcommand{\hlopt}[1]{\textcolor[rgb]{0,0,0}{#1}}%
+\newcommand{\hlstd}[1]{\textcolor[rgb]{0.345,0.345,0.345}{#1}}%
+\newcommand{\hlkwa}[1]{\textcolor[rgb]{0.161,0.373,0.58}{\textbf{#1}}}%
+\newcommand{\hlkwb}[1]{\textcolor[rgb]{0.69,0.353,0.396}{#1}}%
+\newcommand{\hlkwc}[1]{\textcolor[rgb]{0.333,0.667,0.333}{#1}}%
+\newcommand{\hlkwd}[1]{\textcolor[rgb]{0.737,0.353,0.396}{\textbf{#1}}}%
+
+\usepackage{framed}
+\makeatletter
+\newenvironment{kframe}{%
+ \def\at@end@of@kframe{}%
+ \ifinner\ifhmode%
+  \def\at@end@of@kframe{\end{minipage}}%
+  \begin{minipage}{\columnwidth}%
+ \fi\fi%
+ \def\FrameCommand##1{\hskip\@totalleftmargin \hskip-\fboxsep
+ \colorbox{shadecolor}{##1}\hskip-\fboxsep
+     % There is no \\@totalrightmargin, so:
+     \hskip-\linewidth \hskip-\@totalleftmargin \hskip\columnwidth}%
+ \MakeFramed {\advance\hsize-\width
+   \@totalleftmargin\z@ \linewidth\hsize
+   \@setminipage}}%
+ {\par\unskip\endMakeFramed%
+ \at@end@of@kframe}
+\makeatother
+
+\definecolor{shadecolor}{rgb}{.97, .97, .97}
+\definecolor{messagecolor}{rgb}{0, 0, 0}
+\definecolor{warningcolor}{rgb}{1, 0, 1}
+\definecolor{errorcolor}{rgb}{1, 0, 0}
+\newenvironment{knitrout}{}{} % an empty environment to be redefined in TeX
+
+\usepackage{alltt}
 \usepackage[margin=0.75in]{geometry}
 \usepackage{amsmath,amssymb}
 \usepackage{graphicx,float}
@@ -10,7 +59,6 @@
 \usepackage{caption}
 \usepackage{subcaption}
 \usepackage{wrapfig}
-\usepackage{xcolor}
 \usepackage{hyperref}
 \usepackage{listings}
 
@@ -57,9 +105,10 @@
 \newcommand{\sao}{SaO$_2$}
 
 \setlength{\marginparwidth}{2cm}
-\usepackage{Sweave}
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
 \begin{document}
-\input{paper-concordance}
+
+
 \begin{center}
 	\vspace{0.1cm}
 	\textsc{\LARGE MATH 640 Final Project} \\[0.1cm]
@@ -149,6 +198,76 @@ Because this posterior does not suggest any obvious proposal distributions I wil
 \subsection{Zero Inflated Negative Binomial}
 \label{ss:rZiNBinom}
 
+
+
+The ZINB model was fit using the Metropolis-Hastings algorithm with a multivariate truncated normal distribution used as the proposal distribution. For the source code of the sampler, please see \ref{a:cZINB}.
+
+This model suffered severely from the curse of dimensionality. It was very slow to converge, and the very small variance (necessary to tune the acceptance rate) led to high autocorrelation, meaning agressive thinning was necessary. Autocorrelation and running mean plots for both the Tornado and the Flash Flood models can be found in Figure~\ref{f:zinbconvergence}. 
+
+
+In the end $650000$ samples were drawn originally for each model, with a burn in of $20000$ and one of every $70$ samples was retained, resulting in a final sample size of $9000$. The flood model had an acceptance rate of $0.193$ and the tornado model had an acceptance rate of $0.193$. The resulting densities are pictured in Figure~\ref{f:zinbdensity}, and Table~\ref{t:ZINBparams}, though due to autocorrelation and questions of convergence the results should viewed with caution.
+
+
+
+The DIC for floods and tornadoes respectively were $10804$ and $7166$. I was unable to calculate WIACs because it was too computationally expensive.
+\begin{table}
+\centering
+\caption{The following table shows the results of the flash flood ZINB model and the tornado ZINB model. It shows the mean and the median for each parameter as well as the 95\% credible interval.}
+\label{t:ZINBparams}
+\begin{tabular}{lcccccc}
+\toprule
+&\multicolumn{3}{c}{Flash Flood}&\multicolumn{3}{c}{Tornado}\\
+\cmidrule(r){2-4}\cmidrule(l){5-7}
+Parameter & Mean Value &Median Value & (95\% CI)& Mean Value &Median Value & (95\% CI)\\
+\midrule
+$\sigma$ & 0.305 &
+  0.285&
+  (0.014, 
+    0.712)&
+  0.29 &
+  0.267&
+  (0.012, 
+    0.682)\\
+$p$ &  0.555 &
+  0.555&
+  (0.519, 
+    0.591)&
+  0.862 &
+  0.863&
+  (0.841, 
+    0.882)\\
+$r$ &  0.023 &
+  0.02&
+  (0.014, 
+    0.052)&
+  0.015 &
+  0.013&
+  (0.009, 
+    0.03)\\
+\bottomrule
+\end{tabular}
+\end{table}
+\begin{figure}
+	\centering
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
+\includegraphics[width=\maxwidth]{figure/floodconvergence-1} 
+
+\end{knitrout}
+	\caption{Autocorrelation plots, index plots, and cumulative mean plots for each of the three parameters in the ZINB model fit on flash flood and the tornado data.}
+	\label{f:zinbconvergence}
+\end{figure} 
+
+\begin{figure}
+	\centering
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}
+\includegraphics[width=\maxwidth]{figure/zinbdensity-1} 
+
+\end{knitrout}
+	\caption{Posterior density curves for each of the three variables. The flood posterior is shown in blue and the tornado posterior is shown in black.}
+	\label{f:zinbdensity}
+\end{figure} 
 \section{Discussion}
 \label{s:discussion}
 
@@ -163,6 +282,107 @@ Because this posterior does not suggest any obvious proposal distributions I wil
 \section{Code}
 \label{a:code}
 This appendix includes the code used to implement the models.
+\subsection{Zero Inflated Negative Binomial code}
+\label{a:cZINB}
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{logpost} \hlkwb{<-} \hlkwa{function}\hlstd{(}\hlkwc{sigma}\hlstd{,} \hlkwc{p}\hlstd{,} \hlkwc{r}\hlstd{,} \hlkwc{Z}\hlstd{,} \hlkwc{N}\hlstd{,} \hlkwc{S}\hlstd{,} \hlkwc{nonzero}\hlstd{)\{}
+  \hlstd{lp} \hlkwb{<-} \hlstd{Z}\hlopt{*}\hlkwd{log}\hlstd{(}\hlnum{1} \hlopt{+} \hlstd{(}\hlnum{1}\hlopt{/}\hlstd{sigma}\hlopt{-}\hlnum{1}\hlstd{)}\hlopt{*}\hlstd{(}\hlnum{1}\hlopt{-}\hlstd{p)}\hlopt{^}\hlstd{r)}
+  \hlstd{lp} \hlkwb{<-} \hlstd{lp} \hlopt{+} \hlstd{Z}\hlopt{*}\hlkwd{log}\hlstd{(sigma)}
+  \hlstd{lp} \hlkwb{<-} \hlstd{lp} \hlopt{+} \hlstd{(N}\hlopt{-}\hlstd{Z)}\hlopt{*}\hlkwd{log}\hlstd{(}\hlnum{1}\hlopt{-}\hlstd{sigma)}
+  \hlstd{lp} \hlkwb{<-} \hlstd{lp} \hlopt{+} \hlstd{(N}\hlopt{-}\hlstd{Z)}\hlopt{*}\hlstd{r}\hlopt{*}\hlkwd{log}\hlstd{(}\hlnum{1}\hlopt{-}\hlstd{p)}
+  \hlstd{lp} \hlkwb{<-} \hlstd{lp} \hlopt{+} \hlstd{S}\hlopt{*}\hlkwd{log}\hlstd{(p)}
+  \hlstd{lp} \hlkwb{<-} \hlstd{lp} \hlopt{-} \hlkwd{log}\hlstd{(r)}\hlopt{/}\hlnum{2}
+  \hlstd{lp} \hlkwb{<-} \hlstd{lp} \hlopt{-} \hlstd{(N}\hlopt{-}\hlstd{Z)}\hlopt{*}\hlkwd{lgamma}\hlstd{(r)}
+  \hlstd{lp} \hlkwb{<-} \hlstd{lp} \hlopt{+} \hlkwd{sum}\hlstd{(}\hlkwd{lgamma}\hlstd{(r}\hlopt{+}\hlstd{nonzero))}
+  \hlkwd{return}\hlstd{(lp)}
+\hlstd{\}}
+
+\hlstd{loglik} \hlkwb{<-} \hlkwa{function}\hlstd{(}\hlkwc{sigma}\hlstd{,} \hlkwc{p}\hlstd{,} \hlkwc{r}\hlstd{,} \hlkwc{Z}\hlstd{,} \hlkwc{N}\hlstd{,} \hlkwc{S}\hlstd{,} \hlkwc{nonzero}\hlstd{)\{}
+  \hlstd{lp} \hlkwb{<-} \hlstd{Z}\hlopt{*}\hlkwd{log}\hlstd{(}\hlnum{1} \hlopt{+} \hlstd{(}\hlnum{1}\hlopt{/}\hlstd{sigma}\hlopt{-}\hlnum{1}\hlstd{)}\hlopt{*}\hlstd{(}\hlnum{1}\hlopt{-}\hlstd{p)}\hlopt{^}\hlstd{r)}
+  \hlstd{lp} \hlkwb{<-} \hlstd{lp} \hlopt{+} \hlstd{Z}\hlopt{*}\hlkwd{log}\hlstd{(sigma)}
+  \hlstd{lp} \hlkwb{<-} \hlstd{lp} \hlopt{+} \hlstd{(N}\hlopt{-}\hlstd{Z)}\hlopt{*}\hlkwd{log}\hlstd{(}\hlnum{1}\hlopt{-}\hlstd{sigma)}
+  \hlstd{lp} \hlkwb{<-} \hlstd{lp} \hlopt{+} \hlstd{(N}\hlopt{-}\hlstd{Z)}\hlopt{*}\hlstd{r}\hlopt{*}\hlkwd{log}\hlstd{(}\hlnum{1}\hlopt{-}\hlstd{p)}
+  \hlstd{lp} \hlkwb{<-} \hlstd{lp} \hlopt{+} \hlstd{S}\hlopt{*}\hlkwd{log}\hlstd{(p)}
+  \hlstd{lp} \hlkwb{<-} \hlstd{lp} \hlopt{-} \hlkwd{sum}\hlstd{(}\hlkwd{lgamma}\hlstd{(nonzero}\hlopt{+}\hlnum{1}\hlstd{))}
+  \hlstd{lp} \hlkwb{<-} \hlstd{lp} \hlopt{-} \hlstd{(N}\hlopt{-}\hlstd{Z)}\hlopt{*}\hlkwd{lgamma}\hlstd{(r)}
+  \hlstd{lp} \hlkwb{<-} \hlstd{lp} \hlopt{+} \hlkwd{sum}\hlstd{(}\hlkwd{lgamma}\hlstd{(r}\hlopt{+}\hlstd{nonzero))}
+  \hlkwd{return}\hlstd{(lp)}
+\hlstd{\}}
+
+\hlstd{g} \hlkwb{<-}\hlkwa{function}\hlstd{(}\hlkwc{sigma}\hlstd{,} \hlkwc{p}\hlstd{,} \hlkwc{r}\hlstd{,}
+             \hlkwc{sigma.mean}\hlstd{,} \hlkwc{p.mean}\hlstd{,} \hlkwc{r.mean}\hlstd{,}
+             \hlkwc{sigma.var}\hlstd{,} \hlkwc{p.var}\hlstd{,} \hlkwc{r.var}\hlstd{)\{}
+    \hlkwd{return}\hlstd{(}\hlkwd{dtruncnorm}\hlstd{(sigma,} \hlnum{0}\hlstd{,} \hlnum{1}\hlstd{, sigma.mean,} \hlkwd{sqrt}\hlstd{(sigma.var))}\hlopt{*}
+           \hlkwd{dtruncnorm}\hlstd{(p,} \hlnum{0}\hlstd{,} \hlnum{1}\hlstd{, p.mean,} \hlkwd{sqrt}\hlstd{(p.var))}\hlopt{*}
+           \hlkwd{dtruncnorm}\hlstd{(r,} \hlnum{0}\hlstd{,} \hlnum{Inf}\hlstd{, r.mean,} \hlkwd{sqrt}\hlstd{(r.var)))}
+\hlstd{\}}
+
+
+\hlstd{zinb.sampler} \hlkwb{<-} \hlkwa{function}\hlstd{(}\hlkwc{df}\hlstd{,} \hlkwc{event_type}\hlstd{,} \hlkwc{chainlen}\hlstd{,}
+                         \hlkwc{r.var}\hlstd{=}\hlnum{1}\hlstd{,} \hlkwc{p.var}\hlstd{=}\hlnum{1}\hlstd{,} \hlkwc{sigma.var}\hlstd{=}\hlnum{1}\hlstd{,}
+                         \hlkwc{burnin}\hlstd{=}\hlnum{0}\hlstd{,} \hlkwc{thinning}\hlstd{=}\hlnum{1}\hlstd{)\{}
+  \hlstd{X} \hlkwb{<-} \hlstd{df[df}\hlopt{$}\hlstd{EVENT_TYPE}\hlopt{==}\hlstd{event_type,}\hlstr{"DEATHS_DIRECT"}\hlstd{]}
+  \hlstd{N} \hlkwb{<-} \hlkwd{length}\hlstd{(X)}
+  \hlstd{Z} \hlkwb{<-} \hlkwd{sum}\hlstd{(X}\hlopt{==}\hlnum{0}\hlstd{)}
+  \hlstd{S} \hlkwb{<-} \hlkwd{sum}\hlstd{(X)}
+  \hlstd{nonzero} \hlkwb{<-} \hlstd{X[X}\hlopt{!=}\hlnum{0}\hlstd{]}
+  \hlstd{B} \hlkwb{<-} \hlstd{chainlen}
+  \hlstd{b} \hlkwb{<-} \hlstd{burnin}
+  \hlstd{r.sd} \hlkwb{<-} \hlkwd{sqrt}\hlstd{(r.var)}
+  \hlstd{p.sd} \hlkwb{<-} \hlkwd{sqrt}\hlstd{(p.var)}
+  \hlstd{sigma.sd} \hlkwb{<-} \hlkwd{sqrt}\hlstd{(sigma.var)}
+
+  \hlstd{r.array} \hlkwb{<-} \hlkwd{rep}\hlstd{(}\hlnum{0}\hlstd{, B)}
+  \hlstd{sigma.array} \hlkwb{<-} \hlkwd{rep}\hlstd{(}\hlnum{0}\hlstd{, B)}
+  \hlstd{p.array} \hlkwb{<-} \hlkwd{rep}\hlstd{(}\hlnum{0}\hlstd{, B)}
+  \hlstd{ar.array} \hlkwb{<-} \hlkwd{rep}\hlstd{(}\hlnum{0}\hlstd{, B)}
+  \hlstd{posts} \hlkwb{<-} \hlkwd{rep}\hlstd{(}\hlnum{0}\hlstd{, B)}
+
+  \hlstd{r.array[}\hlnum{1}\hlstd{]} \hlkwb{<-} \hlnum{.5}
+  \hlstd{p.array[}\hlnum{1}\hlstd{]} \hlkwb{<-} \hlkwd{min}\hlstd{(}\hlkwd{mean}\hlstd{(X),} \hlnum{.5}\hlstd{)}
+  \hlstd{sigma.array[}\hlnum{1}\hlstd{]} \hlkwb{<-} \hlkwd{mean}\hlstd{(X}\hlopt{==}\hlnum{0}\hlstd{)}\hlopt{/}\hlnum{2}
+  \hlcom{#print(c(r.array[1], p.array[1], sigma.array[1]))}
+  \hlstd{posts[}\hlnum{1}\hlstd{]} \hlkwb{<-} \hlkwd{logpost}\hlstd{(sigma.array[}\hlnum{1}\hlstd{], p.array[}\hlnum{1}\hlstd{], r.array[}\hlnum{1}\hlstd{], Z, N, S, nonzero)}
+  \hlkwa{for}\hlstd{(i} \hlkwa{in} \hlnum{2}\hlopt{:}\hlstd{chainlen)\{}
+    \hlstd{sigma.star} \hlkwb{<-} \hlkwd{rtruncnorm}\hlstd{(}\hlnum{1}\hlstd{,} \hlnum{0}\hlstd{,} \hlnum{1}\hlstd{, sigma.array[i}\hlopt{-}\hlnum{1}\hlstd{], sigma.sd)}
+    \hlstd{p.star} \hlkwb{<-} \hlkwd{rtruncnorm}\hlstd{(}\hlnum{1}\hlstd{,} \hlnum{0}\hlstd{,} \hlnum{1}\hlstd{, p.array[i}\hlopt{-}\hlnum{1}\hlstd{], p.sd)}
+    \hlstd{r.star} \hlkwb{<-} \hlkwd{rtruncnorm}\hlstd{(}\hlnum{1}\hlstd{,} \hlnum{0}\hlstd{,} \hlnum{Inf}\hlstd{, r.array[i}\hlopt{-}\hlnum{1}\hlstd{], r.sd)}
+    \hlstd{lpost} \hlkwb{<-}\hlkwd{logpost}\hlstd{(sigma.star, p.star, r.star, Z, N, S, nonzero)}
+    \hlstd{reject.prob} \hlkwb{<-} \hlkwd{exp}\hlstd{(lpost}\hlopt{-}\hlstd{posts[i}\hlopt{-}\hlnum{1}\hlstd{])}\hlopt{*}
+                   \hlkwd{dtruncnorm}\hlstd{(sigma.array[i}\hlopt{-}\hlnum{1}\hlstd{],} \hlnum{0}\hlstd{,} \hlnum{1}\hlstd{,}
+                              \hlstd{sigma.star, sigma.sd)}\hlopt{*}
+                   \hlkwd{dtruncnorm}\hlstd{(p.array[i}\hlopt{-}\hlnum{1}\hlstd{],} \hlnum{0}\hlstd{,} \hlnum{1}\hlstd{, p.star, p.sd)}\hlopt{*}
+                   \hlkwd{dtruncnorm}\hlstd{(r.array[i}\hlopt{-}\hlnum{1}\hlstd{],} \hlnum{0}\hlstd{,} \hlnum{Inf}\hlstd{, r.star, r.sd)}\hlopt{/}
+                  \hlstd{(}\hlkwd{dtruncnorm}\hlstd{(sigma.star,} \hlnum{0}\hlstd{,} \hlnum{1}\hlstd{,}
+                              \hlstd{sigma.array[i}\hlopt{-}\hlnum{1}\hlstd{], sigma.sd)}\hlopt{*}
+                     \hlkwd{dtruncnorm}\hlstd{(p.star,} \hlnum{0}\hlstd{,} \hlnum{1}\hlstd{, p.array[i}\hlopt{-}\hlnum{1}\hlstd{], p.sd)}\hlopt{*}
+                     \hlkwd{dtruncnorm}\hlstd{(r.star,} \hlnum{0}\hlstd{,} \hlnum{Inf}\hlstd{, r.array[i}\hlopt{-}\hlnum{1}\hlstd{], r.sd))}
+    \hlstd{u} \hlkwb{<-} \hlkwd{runif}\hlstd{(}\hlnum{1}\hlstd{,}\hlnum{0}\hlstd{,}\hlnum{1}\hlstd{)}
+    \hlkwa{if}\hlstd{(u} \hlopt{<} \hlkwd{min}\hlstd{(reject.prob,} \hlnum{1}\hlstd{))\{}
+      \hlstd{r.array[i]} \hlkwb{<-} \hlstd{r.star}
+      \hlstd{p.array[i]} \hlkwb{<-} \hlstd{p.star}
+      \hlstd{sigma.array[i]} \hlkwb{<-} \hlstd{sigma.star}
+      \hlstd{ar.array[i]} \hlkwb{<-} \hlnum{1}
+      \hlstd{posts[i]} \hlkwb{<-} \hlstd{lpost}
+    \hlstd{\}}
+    \hlkwa{else}\hlstd{\{}
+      \hlstd{r.array[i]} \hlkwb{<-} \hlstd{r.array[i}\hlopt{-}\hlnum{1}\hlstd{]}
+      \hlstd{p.array[i]} \hlkwb{<-} \hlstd{p.array[i}\hlopt{-}\hlnum{1}\hlstd{]}
+      \hlstd{sigma.array[i]} \hlkwb{<-} \hlstd{sigma.array[i}\hlopt{-}\hlnum{1}\hlstd{]}
+      \hlstd{posts[i]} \hlkwb{<-} \hlstd{posts[i}\hlopt{-}\hlnum{1}\hlstd{]}
+    \hlstd{\}}
+  \hlstd{\}}
+  \hlstd{inds} \hlkwb{<-} \hlkwd{seq}\hlstd{(b}\hlopt{+}\hlnum{1}\hlstd{, B,} \hlkwc{by}\hlstd{=thinning)}
+  \hlkwd{return}\hlstd{(}\hlkwd{list}\hlstd{(}\hlkwc{sigma}\hlstd{=sigma.array[inds],}
+              \hlkwc{p}\hlstd{=p.array[inds],}
+              \hlkwc{r}\hlstd{=r.array[inds],}
+              \hlkwc{ar}\hlstd{=ar.array))}
+\hlstd{\}}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
 
 \section{Derivations}
 \label{a:derivation}
@@ -185,5 +405,4 @@ p(r,\sigma, p|X)\propto&\left(\sigma + (1-\sigma)(1-p)^r\right)^Z(1-\sigma)^{N-Z
 \ln\left(p(r,\sigma, p|X)\right)\propto&Z\ln\left(1 + (1/\sigma-1)(1-p)^r\right) + Z\ln(\sigma) + (N-Z)\ln(1-\sigma)+(N-Z)r\ln(1-p)\\
 &+\sum_{i=1}^NX_i\ln(p)-\ln(r)/2-N\ln(\Gamma(r))+\sum_{i=1}^N\ln(\Gamma(r+X_i))
 \end{align*}
-
 \end{document}

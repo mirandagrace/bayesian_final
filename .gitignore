@@ -8,7 +8,6 @@ storm_details.csv
 *.zip
 *.gz
 *.out
-paper.pdf
 *.aux
 *.bbl
 *.blg
@@ -16,5 +15,3 @@ paper.pdf
 paper.pdf
 
 paper-concordance.tex
-
-*.aux
