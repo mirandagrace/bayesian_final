@@ -111,6 +111,7 @@
 	\section{Introduction} 
 	\begin{frame}
 		\frametitle{Introduction: Goals and Motivation}
+		Understanding how and at what rate severe weather events become lethal in the United States has tremendous health impacts. Understanding the distribution of death counts can help meteorologists better predict outcomes.
 	\end{frame}
 	\begin{frame}
 		\frametitle{Introduction: Data}
@@ -122,16 +123,21 @@
 		\end{itemize}
 	\end{frame}
 	\begin{frame}
-		\frametitle{Introduction: Base Models}
-		% description of negative binomials and poisson models
-	\end{frame}
-	\begin{frame}
-		\frametitle{Introduction: Zero Inflated models}
-		% overview of what a zero inflated models are 
+		\frametitle{Introduction: Zero Inflated Models}
+			Fortunately, the vast majority of severe weather events in the United States involve no deaths, therefore we wanted to also account for the possibility of structural zeros, therefore we also considered zero inflated variants. A zero inflated model is a combination of the original distribution and a point mass at zero. If the original distribution is $p(x)$ then $$z(x) = \begin{cases}
+			\sigma + (1-\sigma)*p(0) &x=0\\
+			(1-\sigma)*p(x) &x\ne0
+			\end{cases}$$
 	\end{frame}
 	\begin{frame}
 		\frametitle{Introduction: Four Models}
-		% list the four models
+				In this paper we compare four possible models for the deaths: 
+				\begin{enumerate}
+					\item Poisson
+					\item Negative Binomial
+					\item Zero Inflated Poisson
+					\item Zero Inflated Negative Binomial
+				\end{enumerate}
 	\end{frame}
 	
 	\section{Negative Binomial Model}
@@ -157,21 +163,35 @@
 	\section{Zero Inflated Poisson Model}
 	\begin{frame}
 		\frametitle{Zero Inflated Poisson Model}
-		% Slide one
+		
 	\end{frame}
 	\begin{frame}
 		\frametitle{Zero Inflated Poisson Model}
-		% Slide two
+
 	\end{frame}
 	
 	\section{Zero Inflated Negative Binomial Model}
 	\begin{frame}
 		\frametitle{Zero Inflated Negative Binomial Model}
-		% Slide one
+		The Zero Inflated Negative Binomial (ZINB) model has three parameters $\sigma,$ the probability of a structural zero, and $p,r$ the usual negative binomial parameters. 
+		For a single $X$ the probability density is: 
+		$$p(X|\sigma, p, r) = \sigma I_{X=0}(X) + (1-\sigma)\frac{\Gamma(r+X)}{\Gamma(r)X!}p^X(1-p)^r$$
 	\end{frame}
 	\begin{frame}
 		\frametitle{Zero Inflated Negative Binomial Model}
-		% Slide two
+		We took the uniform priors on $\sigma$ and $p$ and the non-informative prior $r^{-1/2}$ on $r$.
+		This gave a posterior of:
+		\scriptsize$$p(r,\sigma, p|X)\propto\left(\sigma + (1-\sigma)(1-p)^r\right)^Z(1-\sigma)^{N-Z}(1-p)^{(N-Z)r}p^{\sum_{i=1}^NX_i}\prod_{i=1}^N\left(\frac{\Gamma(r+X_i)}{r^{1/2}\Gamma(r)}\right)$$
+		\normalsize This factors into nothing. Therefore we used the Metropolis Hastings Algorithm with proposal distributions of truncated normals.
+	\end{frame}
+	\begin{frame}
+		\frametitle{Zero Inflated Negative Binomial Model:Results}
+		\begin{itemize}
+			\item Curse of Dimensionality; very slow convergence.
+			\item High autocorrelation
+			\item Low confidence in results
+		\end{itemize}
+		% parameter table goes here
 	\end{frame}
 	
 	\section{Conclusions}
@@ -187,7 +207,7 @@
 		\frametitle{Conclusions: Future Work}
 		% List of things we might have done if we'd had time
 		\begin{enumerate}
-			\item{Re parameterize the ZINB model/look into other techniques.}
+			\item{Re-parameterize the ZINB model/look into other techniques to improve convergence.}
 			\item{See if the results hold on other extreme weather events.}
 		\end{enumerate}
 	\end{frame}
