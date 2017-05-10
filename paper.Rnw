@@ -132,36 +132,6 @@ The Zero Inflated Poisson (ZIP) model has two parameters. The parameter p is the
 \[
 p(x|p, \lambda) = pI_{x=0}(x) + (1-p)\frac{e^{-\lambda}\lambda^x}{x!}
 \]
-
-
-\noindent We can write the likelihood as follows:
-$$
-L(p, \lambda|X) = \prod_{x_i=0}\bigg[p+(1-p)\frac{e^{-\lambda}\lambda^{x_i}}{x_i!}\bigg]\prod_{x_i \ne 0}\bigg[(1-p)\frac{e^{-\lambda}\lambda^{x_i}}{x_i!}\bigg]
-$$
-
-\noindent Bayarri, Berger, and Datta (2008) \cite{ZIP} suggest using the prior distribution $\pi(\lambda, p) \propto \frac{1}{\sqrt{\lambda}}I(0<p<1)$. This gives us the following posterior 
-
-\[
-\prod_{x_i=0}\bigg[p+(1-p)\frac{e^{-\lambda}\lambda^{x_i}}{x_i!}\bigg]\prod_{x_i \ne 0}\bigg[(1-p)\frac{e^{-\lambda}\lambda^{x_i - 1/2}}{x_i!}\bigg]
-\]
-
-\noindent In obtaining our full conditionals, we can simplify this slightly to obtain the following:
-
-\[
-p(\lambda|X, p) \propto \prod_{x_i=0}\bigg[p+(1-p)\frac{e^{-\lambda}\lambda^{x_i}}{x_i!}\bigg]\prod_{x_i \ne 0}\bigg[e^{-\lambda}\lambda^{x_i - 1/2}\bigg]
-\]
-
-\[
-p(p|X, \lambda) \propto \prod_{x_i=0}\bigg[p+(1-p)\frac{e^{-\lambda}\lambda^{x_i}}{x_i!}\bigg]\prod_{x_i \ne 0}\bigg[(1-p)\bigg]
-\]
-
-\noindent Neither of these distributions is recognizable. We can use a Metropolis-Hastings algorithm to sample from both of them. We will use a beta distribution as a proposal for p, and a gamma for $\lambda$. We will tune them to obtain a better acceptance rate. 
-
-The Zero Inflated Poisson (ZIP) model has two parameters. The parameter p is the probability of a structural zero, and $\lambda$ corresponds to the parameter in a typical Poisson model. For a single observation x, the probability density is:
-
-\[
-p(x|p, \lambda) = pI_{x=0}(x) + (1-p)\frac{e^{-\lambda}\lambda^x}{x!}
-\]
  
  
 \noindent We can write the likelihood as follows:
@@ -175,17 +145,7 @@ $$
 \prod_{x_i=0}\bigg[p+(1-p)\frac{e^{-\lambda}\lambda^{x_i}}{x_i!}\bigg]\prod_{x_i \ne 0}\bigg[(1-p)\frac{e^{-\lambda}\lambda^{x_i - 1/2}}{x_i!}\bigg]
 \]
 
-\noindent In obtaining our full conditionals, we can simplify this slightly to obtain the following:
-
-\[
-p(\lambda|X, p) \propto \prod_{x_i=0}\bigg[p+(1-p)\frac{e^{-\lambda}\lambda^{x_i}}{x_i!}\bigg]\prod_{x_i \ne 0}\bigg[e^{-\lambda}\lambda^{x_i - 1/2}\bigg]
-\]
-
-\[
-p(p|X, \lambda) \propto \prod_{x_i=0}\bigg[p+(1-p)\frac{e^{-\lambda}\lambda^{x_i}}{x_i!}\bigg]\prod_{x_i \ne 0}\bigg[(1-p)\bigg]
-\]
-
-\noindent Neither of these distributions is recognizable. We can use a Metropolis-Hastings algorithm to sample from both of them. We will use a beta distribution as a proposal for p, and a gamma for $\lambda$. We will tune them to obtain a better acceptance rate. 
+\noindent Neither of the full conditional distributions is recognizable (see \ref{a:dZIP}). We can use a Metropolis-Hastings algorithm to sample from both of them. We will use a beta distribution as a proposal for p, and a gamma for $\lambda$. We will tune them to obtain a better acceptance rate. 
 
 
 \subsection{Zero Inflated Negative Binomial}
@@ -211,19 +171,19 @@ Because this posterior does not suggest any obvious proposal distributions I wil
 
 In tuning the parameters of the two models, slightly different values were chosen for the two different event types. The proposal distribution selected for $\lambda$ was a gamma(2, 2) for tornados, and a gamma(1, 2) for flash floods. The proposal for p within the tornado model was a beta(1940, 60), whereas it was a beta(2945, 55) in the flash flood model. 
 
-For each variable of interest, 20,000 samples were taken. As convergence was not immediately achieved, the first 10,000 samples were discarded as a burn-in. The results are as follows: 
+For each variable of interest, 20,000 samples were taken. As convergence was not immediately achieved, the first 10,000 samples were discarded as a burn-in. The results are summarized in Table~\ref{t:rZIP}.
 
-\[\]
-\noindent Table 1: Results of taking 20,000 samples from the posterior distributions of $\lambda$ and p, compared between the two event types. The second column relays the mean of the sample for $\lambda$, with the 95 percent credible interval in parentheses. The third does the same for p. All means and credible intervals are taken after discarding the first 10,000 samples as a burn-in.
-
-\begin{center}
+\begin{table}
+    \centering
+    \caption{Results of taking 20,000 samples from the posterior distributions of $\lambda$ and p, compared between the two event types. The second column relays the mean of the sample for $\lambda$, with the 95 percent credible interval in parentheses. The third does the same for p. All means and credible intervals are taken after discarding the first 10,000 samples as a burn-in.}
+    \label{t:rZIP}
     \begin{tabular}{| l | l | l |}
     \hline
     Event Type & $\lambda$ & p  \\ \hline
     $Tornado$ & 1.872 (1.030, 3.710) & 0.971 (0.968, 0.973) \\ \hline
     $Flash Flood$ & 0.562 (0.293, 0.972) & 0.982 (0.981, 0.983) \\ \hline
     \end{tabular}
-\end{center}
+\end{table}
 
 \subsection{Zero Inflated Negative Binomial}
 \label{ss:rZiNBinom}
@@ -232,16 +192,16 @@ For each variable of interest, 20,000 samples were taken. As convergence was not
 <<densityplot, echo=FALSE>>=
 @
 <<zinbparams, echo=FALSE, cache=TRUE>>=
-samplesize <- 650000
-burnin <- 20000
-thin <- 70
+samplesize <- 1030000
+burnin <- 30000
+thin <- 100
 r.var=.00002
 p.var=.00001
 sigma.var=.001
 @
 The ZINB model was fit using the Metropolis-Hastings algorithm with a multivariate truncated normal distribution used as the proposal distribution. For the source code of the sampler, please see \ref{a:cZINB}.
 
-This model suffered severely from the curse of dimensionality. It was very slow to converge, and the very small variance (necessary to tune the acceptance rate) led to high autocorrelation, meaning agressive thinning was necessary. Autocorrelation and running mean plots for both the Tornado and the Flash Flood models can be found in Figure~\ref{f:zinbconvergence}. 
+This model suffered severely from the curse of dimensionality. It was very slow to converge, and the very small variance (necessary to tune the acceptance rate) led to high autocorrelation, meaning agressive thinning was necessary. Autocorrelation and running mean plots the Flash Flood models can be found in Figure~\ref{f:zinbconvergence}. 
 <<floodsample, cache=TRUE, cache.vars='flood.zinb', echo=FALSE, dependson='zinbparams'>>=
 flood.zinb <- zinb.sampler(storm_details, "Flash Flood", samplesize, 
                            r.var=r.var, p.var=p.var, sigma.var=sigma.var, 
@@ -306,10 +266,10 @@ $r$ &  \Sexpr{mean(flood.zinb$r)} &
 \end{table}
 \begin{figure}
 	\centering
-<<floodconvergence, cache=TRUE, echo=FALSE, dependson=c('floodsample', 'tornadosample'), fig.height=4.75, fig.width=7>>=
+<<floodconvergence, cache=TRUE, echo=FALSE, dependson=c('floodsample', 'tornadosample'), fig.height=3.5>>=
 B<-length(flood.zinb$sigma)
 Bt<-length(tornado.zinb$sigma)
-par(mfrow=c(4, 3))
+par(mfrow=c(2, 3))
 par(mgp=c(1.25,.5,0))
 par(mar=c(3.1,4.1,2.5,.1))
 plot(cumsum(flood.zinb$sigma)/1:B, 
@@ -330,26 +290,26 @@ acf(flood.zinb$r,
     main = expression(paste('ACF (Flood) ',r)))
 acf(flood.zinb$p,
     main = expression(paste('ACF (Flood) ',p)))
-plot(cumsum(tornado.zinb$sigma)/1:Bt, 
-     main = expression(paste('Cum. Mean (Tornado) ',sigma)),
-     ylab = 'Cumulative Mean',
-     type='l')
-plot(cumsum(tornado.zinb$r)/1:Bt, 
-     main = expression(paste('Cum. Mean (Tornado) ',r)),
-     ylab = 'Cumulative Mean',
-     type='l')
-plot(cumsum(tornado.zinb$p)/1:Bt, 
-     type='l', 
-     main = expression(paste('Cum. Mean (Tornado) ',p)),
-     ylab = 'Cumulative Mean')
-acf(tornado.zinb$sigma, 
-    main = expression(paste('ACF (Tornado) ',sigma)))
-acf(tornado.zinb$r,
-    main = expression(paste('ACF (Tornado) ',r)))
-acf(tornado.zinb$p,
-    main = expression(paste('ACF (Tornado) ',p)))
+# plot(cumsum(tornado.zinb$sigma)/1:Bt, 
+#      main = expression(paste('Cum. Mean (Tornado) ',sigma)),
+#      ylab = 'Cumulative Mean',
+#      type='l')
+# plot(cumsum(tornado.zinb$r)/1:Bt, 
+#      main = expression(paste('Cum. Mean (Tornado) ',r)),
+#      ylab = 'Cumulative Mean',
+#      type='l')
+# plot(cumsum(tornado.zinb$p)/1:Bt, 
+#      type='l', 
+#      main = expression(paste('Cum. Mean (Tornado) ',p)),
+#      ylab = 'Cumulative Mean')
+# acf(tornado.zinb$sigma, 
+#     main = expression(paste('ACF (Tornado) ',sigma)))
+# acf(tornado.zinb$r,
+#     main = expression(paste('ACF (Tornado) ',r)))
+# acf(tornado.zinb$p,
+#     main = expression(paste('ACF (Tornado) ',p)))
 @
-	\caption{Autocorrelation plots, index plots, and cumulative mean plots for each of the three parameters in the ZINB model fit on flash flood and the tornado data.}
+	\caption{Autocorrelation plots, and cumulative mean plots for each of the three parameters in the ZINB model fit on flash flood data. The tornado plots are not pictured, but are similar in character.}
 	\label{f:zinbconvergence}
 \end{figure} 
 
@@ -378,6 +338,25 @@ double.density.plot(flood.zinb$r, tornado.zinb$r,
 \end{figure} 
 \section{Discussion}
 \label{s:discussion}
+The goal of this analysis was to determine which of the four models was the best fit for the data. In order to make this determination the DIC and WAIC was calculated for each model on both tornados and flash floods. The results are summarized in Table~\ref{t:evalresults}.
+
+\begin{table}
+\centering
+\caption{The following table shows the resulting DIC and WAIC for each of the four models on both the tornado data and the flash flood data. In the case of the zero inflated negative binomial model, WAIC was too computationally expensive, so it was not calculated.}
+\label{t:evalresults}
+\begin{tabular}{lcccc}
+\toprule
+&\multicolumn{2}{c}{Flash Flood}&\multicolumn{2}{c}{Tornado}\\
+\cmidrule(r){2-3}\cmidrule(l){4-5}
+Model & DIC &WAIC & DIC &WAIC\\
+\midrule
+Poisson & P FLOOD DIC& P FLOOD WAIC &P TORNADO DIC&P TORNADO WAIC\\
+Negative Binomial & NB FLOOD DIC& NB FLOOD WAIC &NB TORNADO DIC&NB TORNADO WAIC\\
+ZIP & ZIP FLOOD DIC& ZIP FLOOD WAIC &ZIP TORNADO DIC&ZIP TORNADO WAIC\\
+ZINB & \Sexpr{flood.dic.zinb}& -- &\Sexpr{tornado.dic.zinb}&--\\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \begin{thebibliography}{2}
   \bibitem{dataset} NOAA's Severe Weather Data Inventory, 
@@ -398,6 +377,17 @@ This appendix includes the code used to implement the models.
 \section{Derivations}
 \label{a:derivation}
 This appendix will include details on the calculations required to derive our models.
+\subsection{Zero Inflated Poisson Derivation}
+\label{a:dZIP}
+\noindent In obtaining our full conditionals, we can simplify this slightly to obtain the following:
+
+\[
+p(\lambda|X, p) \propto \prod_{x_i=0}\bigg[p+(1-p)\frac{e^{-\lambda}\lambda^{x_i}}{x_i!}\bigg]\prod_{x_i \ne 0}\bigg[e^{-\lambda}\lambda^{x_i - 1/2}\bigg]
+\]
+
+\[
+p(p|X, \lambda) \propto \prod_{x_i=0}\bigg[p+(1-p)\frac{e^{-\lambda}\lambda^{x_i}}{x_i!}\bigg]\prod_{x_i \ne 0}\bigg[(1-p)\bigg]
+\]
 \subsection{Zero Inflated Negative Binomial Derivation}
 \label{a:dZINB}
 The likelihood for the ZINB is 
