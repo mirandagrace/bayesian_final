@@ -57,6 +57,7 @@
 
 \setlength{\marginparwidth}{2cm}
 \begin{document}
+\SweaveOpts{concordance=TRUE}
 <<imports, cache=FALSE, echo=FALSE>>= 
 read_chunk('zinb_sampler.R')
 options(scipen=4, digits=3)
@@ -180,10 +181,22 @@ For each variable of interest, 20,000 samples were taken. As convergence was not
     \begin{tabular}{| l | l | l |}
     \hline
     Event Type & $\lambda$ & p  \\ \hline
-    $Tornado$ & 1.872 (1.030, 3.710) & 0.971 (0.968, 0.973) \\ \hline
-    $Flash Flood$ & 0.562 (0.293, 0.972) & 0.982 (0.981, 0.983) \\ \hline
+    Tornado & 1.872 (1.030, 3.710) & 0.971 (0.968, 0.973) \\ \hline
+    Flash Flood & 0.562 (0.293, 0.972) & 0.982 (0.981, 0.983) \\ \hline
     \end{tabular}
 \end{table}
+
+
+\includegraphics{figure/ZIP_Flood_Conv.pdf}
+
+\noindent Figure 1. Cumulative mean plots for the posterior samples of the two parameters from the flood data. Plots for the tornado data are not pictured, but behave similarly.
+
+\includegraphics{figure/ZIP_Density.pdf}
+
+\noindent Figure 2. Posterior density plots for flood parameters (in blue), and tornado parameters (black).
+
+
+
 
 \subsection{Zero Inflated Negative Binomial}
 \label{ss:rZiNBinom}
@@ -352,7 +365,7 @@ Model & DIC &WAIC & DIC &WAIC\\
 \midrule
 Poisson & P FLOOD DIC& P FLOOD WAIC &P TORNADO DIC&P TORNADO WAIC\\
 Negative Binomial & NB FLOOD DIC& NB FLOOD WAIC &NB TORNADO DIC&NB TORNADO WAIC\\
-ZIP & ZIP FLOOD DIC& ZIP FLOOD WAIC &ZIP TORNADO DIC&ZIP TORNADO WAIC\\
+ZIP & 3845.915& ZIP FLOOD WAIC &4759.998 &ZIP TORNADO WAIC\\
 ZINB & \Sexpr{flood.dic.zinb}& -- &\Sexpr{tornado.dic.zinb}&--\\
 \bottomrule
 \end{tabular}
