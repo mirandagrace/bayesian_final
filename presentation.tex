@@ -95,7 +95,7 @@
 \date{May 11, 2017} % Date, can be changed to a custom date
 
 \begin{document}
-	
+
 	\begin{frame}
 		\titlepage % Print the title page as the first slide
 	\end{frame}
@@ -140,26 +140,92 @@
 				\end{enumerate}
 	\end{frame}
 	
-	\section{Negative Binomial Model}
-	\begin{frame}
-		\frametitle{Negative Binomial}
-		% Slide one
-	\end{frame}
-	\begin{frame}
-		\frametitle{Negative Binomial}
-		% Slide two
-	\end{frame}
-	
 	\section{Poisson Model}
 	\begin{frame}
 		\frametitle{Poisson Model}
 		% Slide one
+		The Poisson model has one parameter, $\lambda$ that represents the expected number of occurrences of the event of interest. For a single random variable $x$, the probability density is:
+$$p(x|\lambda)=\frac{\lambda^xe^{-\lambda}}{x!}.$$
 	\end{frame}
 	\begin{frame}
 		\frametitle{Poisson Model}
 		% Slide two
+		The Poisson likelihood can be written as follows:
+$$\mathcal{L}(X|\lambda)\propto\lambda^{n\bar{X}}e^{-n\lambda}.$$  Since we want the data to speak for itself we use Jeffreys' prior, $$\pi(\lambda)\propto\lambda^{1/2-1}e^{-0\cdot\lambda}.$$ Thus the posterior is: $$p(\lambda|X)=\lambda^{n\bar{X}+1/2-1}e^{-n\lambda}.$$
+We recognize this as the kernel of a gamma distribution, namely
+$$\lambda|X\sim\mathcal{G}amma(n\bar{X}+1/2,n).$$
+
+	\end{frame}
+	\begin{frame}
+		\frametitle{Poisson Model}
+		% Slide three
+		\begin{table}
+    \centering
+    \caption{Posterior distributions of $\lambda$, for both event types. From 10,000 samples for each variable we obtained the following values: the second column is the median of the sample for $\lambda$, with the 95 percent credible interval in parentheses.}
+    \label{t:rPOIS}
+    \begin{tabular}{| l | l | l |}
+    \hline
+    Event Type & $\lambda$  \\ \hline
+    Tornado & 0.0592 (0.0564, 0.0620) \\ \hline
+    Flash Flood & 0.0179 (0.0170, 0.0189) \\ \hline
+    \end{tabular}
+\end{table}
+	\end{frame}	
+		\begin{frame}
+		\frametitle{Poisson Model}
+		% Slide four
+		\begin{figure}[p]
+\centering
+\includegraphics[width=.65\textwidth]{figure/POIS_Density.pdf}
+\caption{Posterior density plots (Poisson model) for flood parameters (in blue), and tornado parameters (black). The solid line represents the median and the dashed lines indicate the 95\% confidence interval.}
+\label{f:poisdensity}
+\end{figure}
 	\end{frame}
 	
+	\section{Negative Binomial Model}
+	\begin{frame}
+		\frametitle{Negative Binomial}
+		% Slide one
+		The Negative Binomial model has two parameters, $r,p$, we are mostly interested in $p$. For a single random variable $x$, the probability density is:
+$$p(X|r,p)=\frac{\Gamma(r+x)}{\Gamma(r)x!}p^{x}(1-p)^{r}.$$
+	\end{frame}
+	\begin{frame}
+		\frametitle{Negative Binomial}
+		% Slide two
+		The likelihood of the Negative Binomial can be written as:
+$$\mathcal{L}(X|r,p)=\Bigg[\prod_{i=1}^n\frac{\Gamma(r+x_i)}{\Gamma(r)x_i!}\Bigg]p^{n\bar{X}}(1-p)^{nr}.$$
+Since we want the data to speak for itself, we will use Jeffreys' prior. For the Negative Binomial distribution this is:
+$$\pi(r,p)=r^{1/2}p^{-1}(1-2)^{-1/2}.$$
+We are interested in the conditional posterior of $p|r,X$ given by:
+$$p(p|r,X)\propto p^{n\bar{x}-1}(1-p)^{nr+1/2-1}$$ 
+This is the kernel of a beta distribution, namely
+$$p|r,X\sim\mathcal{B}eta(n\bar{X},nr+1/2).$$
+	\end{frame}
+		\begin{frame}
+		\frametitle{Negative Binomial}
+		% Slide three
+		\begin{table}
+    \centering
+    \caption{Posterior distributions of $p$, for both event types. From 10,000 samples for each variable we obtained the following values: the second column is the median of the sample for $p$, with the 95 percent credible interval in parentheses.}
+    \label{t:rNB}
+    \begin{tabular}{| l | l | l |}
+    \hline
+    Event Type & $p$  \\ \hline
+    Tornado & 0.0559 (0.0534, 0.0585) \\ \hline
+    Flash Flood & 0.0176 (0.0167, 0.0186) \\ \hline
+    \end{tabular}
+\end{table}
+	\end{frame}
+		\begin{frame}
+		\frametitle{Negative Binomial}
+		% Slide four
+		\begin{figure}[p]
+\centering
+\includegraphics[width=.65\textwidth]{figure/NB_Density.pdf}
+\caption{Posterior density plots (Negative Binomial model) for flood parameters (in blue), and tornado parameters (black). The solid line represents the median and the dashed lines indicate the 95\% confidence interval.}
+\label{f:nbdensity}
+\end{figure}
+	\end{frame}
 	\section{Zero Inflated Poisson Model}
 	\begin{frame}
 		\frametitle{Zero Inflated Poisson Model}
@@ -285,12 +351,26 @@ These are unrecognizable. I ended up alternatively sampling from the two using M
 	\begin{frame}
 		\frametitle{Conclusions: Model Evaluation Table}
 		% Waic dic table goes here
+		\begin{table}
+\centering
+\caption{The following table shows the resulting DIC for each of the four models on both the tornado data and the flash flood data.}
+\label{t:evalresults}
+\begin{tabular}{lcc}
+\toprule
+Model & DIC Flash Flood & DIC Tornado\\
+\midrule
+Poisson & 14237 & 17606\\
+Negative Binomial & 101548 & 26372\\
+ZIP & 10454 & 8727 \\
+ZINB & 10804.104&7166.309\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Models with smaller DIC are preferred. From the table we can see that the Zero Inflated Poisson model has the lowest DIC, both for Flash Floods and Tornados. Thus for estimating the rate of lethality of Flash Floods, Tornados, we should use a Zero Inflated Poisson model.
 	\end{frame}
 	\begin{frame}
-		\frametitle{Conclusions: Interpreting the Best Model}
-		% Waic dic table goes here
-	\end{frame}
-	\begin{frame}
+	
 		\frametitle{Conclusions: Future Work}
 		% List of things we might have done if we'd had time
 		\begin{enumerate}
@@ -303,5 +383,4 @@ These are unrecognizable. I ended up alternatively sampling from the two using M
 		\frametitle{Conclusions}
 		Questions?
 	\end{frame}
-	
 \end{document} 
