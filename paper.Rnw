@@ -74,12 +74,7 @@ storm_details <- small_storms
 \section{Introduction}
 \label{s:intro}
 This analysis will be done on a data set of a variety of measurements about severe weather in the United States. 
-The data set contains a variety of measures from severe weather events in the United States from 1996-2016. It was taken from the NOAA website \cite{dataset}.
-For this project we focused on the deaths directly attributable to the event. In the interest of time we only modeled two types of severe weather: Tornadoes and Flash Floods.
-Understanding how and at what rate severe weather events become lethal in the United States has tremendous public health impacts.
-In this paper we compare four possible models for the deaths: The traditional Poisson and negative binomial distributions, as well as the zero inflated variant of each.
-
-The remainder of this analysis is organized as follows: Section~\ref{s:methods} discusses and derives the models. Section~\ref{s:results} describes the results of the analysis. And Section~\ref{s:discussion} contains the conclusions.
+We chose to use a subset of that data covering the years 1996 through 2016. The data coms from the NOAA website \cite{dataset}. For this project we focused on the deaths directly attributable to a type of weather event. In the interest of time, we considered two types of severe weather, Tornados and Flash Floods, reponsible for the second and third most direct deaths among weather types. Understanding how and at what rate severe weather events become lethal in the United States has tremendous public health impacts. In this paper we compare four possible models for the deaths: The traditional Poisson and negative binomial distributions, as well as the zero inflated variant of each. The remainder of this analysis is organized as follows: Section~\ref{s:methods} discusses and derives the models. Section~\ref{s:results} describes the results of the analysis. And Section~\ref{s:discussion} contains the conclusions.
 
 \section{Methods}
 \label{s:methods}
@@ -94,34 +89,21 @@ These distributions are created by returning $0$ with probability $\sigma$ and s
 \label{ss:mPoisson}
 The Poisson model has one parameter, $\lambda$ represents the expected number of occurances of the event of interest. For a single random variable $x$, the probability density is:
 $$p(x|\lambda)=\frac{\lambda^xe^{-\lambda}}{x!}.$$
-Thus the likelihood for a sum of Poisson random variables can be written as follows:
-$$\mathcal{L}(X|\lambda)\propto\lambda^{n\bar{X}}e^{-n\lambda}.$$ 
-Since we want the data to speak for itself, we will use a non-informative random variable, namely, Jeffreys' prior. For the Poisson distribtion this is given as follows:
-$$\pi(\lambda)\propto\lambda^{1/2-1}e^{-0\cdot\lambda}.$$
-We recognize this as the kernel of an improper gamma distribution. Combining the likelihood and the prior distribtion yields the following posterior distribution:
-$$p(\lambda|X)=\lambda^{n\bar{X}+1/2-1}e^{-n\lambda}.$$
-We recognize this as the kernel of a gamma distribution, namely
-$$\lambda|X\sim\mathcal{G}amma(n\bar{X}+1/2,n).$$
+We use Jeffrey's prior, and model 
+$$\lambda|X\sim\mathcal{G}amma(n\bar{X}+1/2,n).$$ 
+For a full derivation see~\ref{a:dP}.
 
 \subsection{Negative Binomial}
 \label{ss:mNBinom}
 The Negative Binomial model has two parameters, $r,p$ represents the expected number of occurances of the event of interest. For a single random variable $x$, the probability density is:
 $$p(X|r,p)=\frac{\Gamma(r+x)}{\Gamma(r)x!}p^{x}(1-p)^{r}.$$
-
-Thus the likelihood for a sum of Negative Binomial random variables can be written as follows:
-$$\mathcal{L}(X|r,p)=\Bigg[\prod_{i=1}^n\frac{\Gamma(r+x_i)}{\Gamma(r)x_i!}\Bigg]p^{n\bar{X}}(1-p)^{nr}.$$
-Since we want the data to speak for itself, we will use a non-informative random variable, namely, Jeffreys' prior. For the Poisson distribtion this is given as follows:
-$$\pi(r,p)=r^{1/2}p^{-1}(1-2)^{-1/2}.$$
-Combining the likelihood and the prior distribtion yields the following posterior distribution:
-$$p(r,p|X)=\Bigg\{\Bigg[\prod_{i=1}^n\frac{\Gamma(r+x_i)}{\Gamma(r)x_i!}\Bigg]p^{n\bar{X}}(1-p)^{nr}\Bigg\}\Bigg\{r^{1/2}p^{-1}(1-2)^{-1/2}\Bigg\}$$
-From this posterior we obtain the full conditionals. First consider $p|r,X$:
+We will use a non-informative random variable, namely, Jeffreys' prior, giving us the following full conditionals: 
 $$p(p|r,X)\propto p^{n\bar{x}-1}(1-p)^{nr+1/2-1}$$
 We recognize this as the kernel of a beta distribution, namely
-
 $$p|r,X\sim\mathcal{B}eta(n\bar{X},nr+1/2).$$
 Next consider $r|p,X$:
 $$p(r|p,X)\propto\bigg[\prod_{i=1}^n\Gamma(r+x_i)\bigg]\Gamma(r)^{-n}(1-p)^{nr}r^{1/2}$$
-This is not a recognized distribtion. So if we wish to make inferences on $r$ we must use a Metropolis algorithm to sample from it.
+This is not a recognized distribtion. So if we wish to make inferences on $r$ we must use a Metropolis algorithm to sample from it. For a full derivation see~\ref{a:dNB}.
 
 \subsection{Zero Inflated Poisson}
 \label{ss:mZiPoisson}
@@ -153,22 +135,58 @@ For a single $X$ the probability density is:
 $$p(X|\sigma, p, r) = \sigma I_{X=0}(X) + (1-\sigma)\frac{\Gamma(r+X)}{\Gamma(r)X!}p^X(1-p)^r.$$
 We take the uniform priors for $\sigma$ and $p$ as well as the non-informative gamma for $r$ which is $r^{-1/2}$. For a full derivation, see \ref{a:dZINB}. My posterior is:
 $$p(r,\sigma, p|X)\propto\left(\sigma + (1-\sigma)(1-p)^r\right)^Z(1-\sigma)^{N-Z}(1-p)^{(N-Z)r}p^{\sum_{i=1}^NX_i}r^{-1/2}\prod_{i=1}^N\left(\frac{\Gamma(r+X_i)}{\Gamma(r)}\right)$$
-This distribution does not factor nicely, so I will use the Metropolis algorithm to sample from it. Because this posterior does not suggest any obvious proposal distributions I will sample each independently from a normal distribution centered at $\theta^*$, and with a variance that is tuned to yeild an appropriate acceptance rate.
+This distribution does not factor nicely, so I will use the Metropolis algorithm to sample from it. Because this posterior does not suggest any obvious proposal distributions I will sample each iteratively from a truncated normal distribution centered at $\theta^*$, and with a variance that is tuned to yield an appropriate acceptance rate.
 
 \section{Results}
 \label{s:results}
 \subsection{Poisson}
 \label{ss:rPoisson}
 
+Because the posterior from our Poisson likelihood and noninformative prior had a recognizable kernel, namely $\mathcal{G}amma(n\bar{X}+1/2,n)$, we were able to sample from this distribution directly. For both Tornados, and Flash Floods, 10,000 samples were taken, to simulate the variable of interest, $\lambda$. The results are summarized in Table~\ref{t:rPOIS}, while density plots can be found in Figure~\ref{f:poisnbdensity}.
+
+\begin{table}
+    \centering
+    \caption{Posterior distributions of $\lambda$, for both event types. The second column relays the median of the sample for $\lambda$, with the 95 percent credible interval in parentheses.}
+    \label{t:rPOIS}
+    \begin{tabular}{| l | l | l |}
+    \hline
+    Event Type & $\lambda$  \\ \hline
+    Tornado & 0.0592 (0.0564, 0.0620) \\ \hline
+    Flash Flood & 0.0179 (0.0170, 0.0189) \\ \hline
+    \end{tabular}
+\end{table}
+
+\begin{figure}
+\centering
+\includegraphics[width=.45\textwidth]{figure/POIS_Density.pdf}
+\includegraphics[width=.45\textwidth]{figure/NB_Density.pdf}
+\caption{Posterior density plots for Poisson (left) and Negative Binomial (right) for flood parameters (in blue), and tornado parameters (black). The solid line represents the median and the dashed lines indicate the 95\% confidence interval.}
+\label{f:poisnbdensity}
+\end{figure}
+
 \subsection{Negative Binomial}
 \label{ss:rNBinom}
+
+As in the case of the Poisson distribution, the conditional posterior from our Negative Binomial likelihood and noninformative prior had a recognizable kernel for $p$, namely $\mathcal{B}eta(n\bar{X},nr+1/2)$, thus we were able to sample from this distribution directly. Meanwhile we took $r$ as known. For both Tornados, and Flash Floods, 10,000 samples were taken, to simulate the variable of interest, $p$. The results are summarized in Table~\ref{t:rNB}, while density plots can be found in Figure~\ref{f:poisnbdensity}.
+
+\begin{table}
+    \centering
+    \caption{Posterior distributions of $p$, for both event types. The second column relays the median of the sample for $p$, with the 95 percent credible interval in parentheses.}
+    \label{t:rNB}
+    \begin{tabular}{| l | l | l |}
+    \hline
+    Event Type & $p$  \\ \hline
+    Tornado & 0.0559 (0.0534, 0.0585) \\ \hline
+    Flash Flood & 0.0176 (0.0167, 0.0186) \\ \hline
+    \end{tabular}
+\end{table}
 
 \subsection{Zero Inflated Poisson}
 \label{ss:rZiPoisson}
 
 In tuning the parameters of the two models, slightly different values were chosen for the two different event types. The proposal distribution selected for $\lambda$ was a gamma(2, 2) for tornados, and a gamma(1, 2) for flash floods. The proposal for p within the tornado model was a beta(1940, 60), whereas it was a beta(2945, 55) in the flash flood model. 
 
-For each variable of interest, 20,000 samples were taken. As convergence was not immediately achieved, the first 10,000 samples were discarded as a burn-in. The results are summarized in Table~\ref{t:rZIP}. Convergance plots can be found in Figrue~\ref{f:zipconv}, and density plots can be found in Figure~\ref{f:zipdensity}.
+For each variable of interest, 20,000 samples were taken. As convergence was not immediately achieved, the first 10,000 samples were discarded as a burn-in. The results are summarized in Table~\ref{t:rZIP}. Density plots can be found in Figure~\ref{f:zipfig}.
 
 \begin{table}
     \centering
@@ -182,18 +200,14 @@ For each variable of interest, 20,000 samples were taken. As convergence was not
     \end{tabular}
 \end{table}
 
-\begin{figure}[p]
+\begin{figure}
 \centering
-\includegraphics[width=.65\textwidth]{figure/ZIP_Flood_Conv.pdf}
-\caption{Cumulative mean plots for the posterior samples (ZIP model) of the two parameters from the flood data. Plots for the tornado data are not pictured, but behave similarly.}
-\label{f:zipconv}
-\end{figure}
-
-\begin{figure}[p]
-\centering
+%\includegraphics[width=.65\textwidth]{figure/ZIP_Flood_Conv.pdf}\\
 \includegraphics[width=.65\textwidth]{figure/ZIP_Density.pdf}
-\caption{Posterior density plots (ZIP model) for flood parameters (in blue), and tornado parameters (black). The solid line represents the mean and the dashed lines indicate the 95\% confidence interval.}
-\label{f:zipdensity}
+\caption{
+%Top: Cumulative mean plots for the posterior samples (ZIP model) of the two parameters from the flood data. Plots for the tornado data are not pictured, but behave similarly. Bottom:
+Posterior density plots (ZIP model) for flood parameters (in blue), and tornado parameters (black). The solid line represents the mean and the dashed lines indicate the 95\% confidence interval.}
+\label{f:zipfig}
 \end{figure}
 
 \subsection{Zero Inflated Negative Binomial}
@@ -212,7 +226,7 @@ sigma.var=.001
 @
 The ZINB model was fit using the Metropolis-Hastings algorithm with a multivariate truncated normal distribution used as the proposal distribution. For the source code of the sampler, please see \ref{a:cZINB}.
 
-This model suffered severely from the curse of dimensionality. It was very slow to converge, and the very small variance needed for a reasonable acceptance led to high autocorrelation, meaning agressive thinning was necessary. Running mean plots the Flash Flood models can be found in Figure~\ref{f:zinbconvergence}. 
+This model suffered severely from the curse of dimensionality. It was very slow to converge, and the very small variance needed for a reasonable acceptance led to high autocorrelation, meaning agressive thinning was necessary. %Running mean plots the Flash Flood models can be found in Figure~\ref{f:zinbconvergence}. 
 <<floodsample, cache=TRUE, cache.vars='flood.zinb', echo=FALSE, dependson='zinbparams'>>=
 flood.zinb <- zinb.sampler(storm_details, "Flash Flood", samplesize, 
                            r.var=r.var, p.var=p.var, sigma.var=sigma.var, 
@@ -223,7 +237,8 @@ tornado.zinb <- zinb.sampler(storm_details, "Tornado", samplesize,
                              r.var=r.var, p.var=p.var, sigma.var=sigma.var, 
                              burnin=burnin, thinning=thin)
 @
-In the end $\Sexpr{samplesize}$ samples were drawn for each model, with a burn in of $\Sexpr{burnin}$ and one of every $\Sexpr{thin}$ samples was retained, resulting in a final sample size of $\Sexpr{length(flood.zinb$sigma)}$. The flood model had an acceptance rate of $\Sexpr{mean(flood.zinb$ar)}$ and the tornado model had an acceptance rate of $\Sexpr{mean(flood.zinb$ar)}$. The resulting densities are pictured in Figure~\ref{f:zinbdensity}, and Table~\ref{t:ZINBparams}, though due to questions of convergence the results should viewed with caution.
+In the end $\Sexpr{samplesize}$ samples were drawn for each model, with a burn in of $\Sexpr{burnin}$ and one of every $\Sexpr{thin}$ samples was retained, resulting in a final sample size of $\Sexpr{length(flood.zinb$sigma)}$. %The flood model had an acceptance rate of $\Sexpr{mean(flood.zinb$ar)}$ and the tornado model had an acceptance rate of $\Sexpr{mean(flood.zinb$ar)}$. 
+The resulting densities are pictured in Figure~\ref{f:zinbdensity}, and Table~\ref{t:ZINBparams}, though due to questions of convergence the results should viewed with caution.
 <<evaluation, echo=FALSE, cache=FALSE>>=
 @
 <<model-eval, echo=FALSE, cache=TRUE, dependson=c('floodsample', 'tornadosample')>>=
@@ -236,7 +251,6 @@ tornado.dic.zinb <- dic(storm_details, "Tornado", tornado.zinb$sigma,
 #tornado.wiac.zinb <- wiac(storm_details, "Tornado", tornado.zinb$sigma, 
 #                          tornado.zinb$r, tornado.zinb$p)
 @
-
 The DIC for floods and tornadoes respectively were $\Sexpr{as.integer(flood.dic.zinb)}$ and $\Sexpr{as.integer(tornado.dic.zinb)}$.
 \begin{table}
 \centering
@@ -275,26 +289,26 @@ $r$ &  \Sexpr{mean(flood.zinb$r)} &
 \bottomrule
 \end{tabular}
 \end{table}
-\begin{figure}[p]
-	\centering
-<<floodconvergence, cache=TRUE, echo=FALSE, dependson=c('floodsample', 'tornadosample'), fig.height=1.75>>=
-B<-length(flood.zinb$sigma)
-Bt<-length(tornado.zinb$sigma)
-par(mfrow=c(1, 3))
-par(mgp=c(1.25,.5,0))
-par(mar=c(3.1,4.1,2.5,.1))
-plot(cumsum(flood.zinb$sigma)/1:B, 
-     main = expression(paste('Cum. Mean (Flood) ',sigma)),
-     ylab = 'Cumulative Mean',
-     type='l')
-plot(cumsum(flood.zinb$r)/1:B, 
-     main = expression(paste('Cum. Mean (Flood) ',r)),
-     ylab = 'Cumulative Mean',
-     type='l')
-plot(cumsum(flood.zinb$p)/1:B, 
-     type='l', 
-     main = expression(paste('Cum. Mean (Flood) ',p)),
-     ylab = 'Cumulative Mean')
+%\begin{figure}[p]
+%	\centering
+ <<floodconvergence, cache=TRUE, echo=FALSE, dependson=c('floodsample', 'tornadosample'), fig.height=1.75>>=
+# B<-length(flood.zinb$sigma)
+# Bt<-length(tornado.zinb$sigma)
+# par(mfrow=c(1, 3))
+# par(mgp=c(1.25,.5,0))
+# par(mar=c(3.1,4.1,2.5,.1))
+# plot(cumsum(flood.zinb$sigma)/1:B, 
+#      main = expression(paste('Cum. Mean (Flood) ',sigma)),
+#      ylab = 'Cumulative Mean',
+#      type='l')
+# plot(cumsum(flood.zinb$r)/1:B, 
+#      main = expression(paste('Cum. Mean (Flood) ',r)),
+#      ylab = 'Cumulative Mean',
+#      type='l')
+# plot(cumsum(flood.zinb$p)/1:B, 
+#      type='l', 
+#      main = expression(paste('Cum. Mean (Flood) ',p)),
+#      ylab = 'Cumulative Mean')
 # acf(flood.zinb$sigma, 
 #     main = expression(paste('ACF (Flood) ',sigma)))
 # acf(flood.zinb$r,
@@ -320,11 +334,11 @@ plot(cumsum(flood.zinb$p)/1:B,
 # acf(tornado.zinb$p,
 #     main = expression(paste('ACF (Tornado) ',p)))
 @
-	\caption{Cumulative mean plots for each of the three parameters in the ZINB model fit on flash flood data. The tornado plots are not pictured, but are similar in character.}
-	\label{f:zinbconvergence}
-\end{figure} 
+%	\caption{Cumulative mean plots for each of the three parameters in the ZINB model fit on flash flood data. The tornado plots are not pictured, but are similar in character.}
+%	\label{f:zinbconvergence}
+%\end{figure} 
 
-\begin{figure}[p]
+\begin{figure}
 	\centering
 <<zinbdensity, cache=TRUE, echo=FALSE, dependson=c('floodsample', 'tornadosample'), fig.height=2.5, fig.width=6>>=
 par(mfrow=c(1,3))
@@ -344,28 +358,31 @@ double.density.plot(flood.zinb$r, tornado.zinb$r,
                     expression(p*group("(",paste(r, "|", X),")")),
                     col=c('blue', 'black'))
 @
-	\caption{Posterior density curves for each of the three variables. The flood posterior is shown in blue and the tornado posterior is shown in black.}
+	\caption{Posterior density curves for each of the three variables (ZINB model). The flood posterior is shown in blue and the tornado posterior is shown in black.}
 	\label{f:zinbdensity}
 \end{figure} 
 \section{Discussion}
 \label{s:discussion}
-The goal of this analysis was to determine which of the four models was the best fit for the data. In order to make this determination the DIC and WAIC was calculated for each model on both tornados and flash floods. The results are summarized in Table~\ref{t:evalresults}.
+The goal of this analysis was to determine which of the four models was the best fit for the data. In order to make this determination the DIC was calculated for each model on both tornados and flash floods. The results are summarized in Table~\ref{t:evalresults}.
 
 \begin{table}
 \centering
 \caption{The following table shows the resulting DIC for each of the four models on both the tornado data and the flash flood data.}
 \label{t:evalresults}
-\begin{tabular}{lcc}
+\begin{tabular}{lrr}
 \toprule
 Model & DIC Flash Flood & DIC Tornado\\
 \midrule
-Poisson & P FLOOD DIC& P TORNADO DIC\\
-Negative Binomial & NB FLOOD DIC&NB TORNADO DIC\\
-ZIP & 10454.860&8727.647 \\
-ZINB & \Sexpr{flood.dic.zinb}&\Sexpr{tornado.dic.zinb}\\
+Poisson & 14237 & 17606\\
+Negative Binomial & 101548 & 26372\\
+ZIP & 10454 & 8727 \\
+ZINB & \Sexpr{as.integer(flood.dic.zinb)}&\Sexpr{as.integer(tornado.dic.zinb)}\\
 \bottomrule
 \end{tabular}
 \end{table}
+
+In general, models with smaller DIC are preferred to models with larger DIC. From the table we can see that the Zero Inflated Poisson model has the lowest DIC, both for Flash Floods and Tornados. Thus for estimating the rate of leathality of Flash Floods, Tornados, and possibly other severe weather, we should use a Zero Inflated Poisson model to fit the data. 
+
 \clearpage
 \begin{thebibliography}{2}
   \bibitem{dataset} NOAA's Severe Weather Data Inventory, 
@@ -503,11 +520,114 @@ for(t in 1:B){
   }
 }
 @
+\subsection{Poisson code}
+<<eval = FALSE>>=
+set.seed(05112017)
+
+# --- model evaluation function -----------------------------------------------------------
+DIC <- function(y, theta, loglik) {
+  theta_hat = mean(theta) #theta_hat = apply(theta, 2, mean)
+  L = loglik(y, theta_hat)
+  S = length(theta) #S = nrow(theta) #S = number of iterations
+  llSum = 0
+  for (s in 1:S) {
+    theta_s = theta[s]
+    llSum = llSum + loglik(y, theta_s)
+  }
+  P = 2 * (L - (1 / S * llSum))
+  DIC = - 2 * (L - P)
+  return(DIC)
+}
+
+# --- poisson log-likelihood ---------------------------------------------------------
+pois_ll <- function(x, lambda) {
+  ll <- sum(dpois(x, lambda, log = TRUE))
+  return(ll)
+}
+
+# --- poisson model -----------------------------------------------------------------
+pois_fit <- function(data, nsim) {
+  x <- data                            
+  xbar <- mean(x)                      
+  n <- length(x)                       
+  lambda <- rgamma(nsim, n * xbar + 1 /2, n) 
+  return(lambda)
+}
+
+# --- results - ---------------------------------------------------------------------------
+lambda_t <- pois_fit(data = TORNADO$DEATHS, nsim = 10000)
+lambda_ff <- pois_fit(data = FLASH_FLOOD$DEATHS, nsim = 10000)
+
+quantile(lambda_t, c(0.025, 0.5, 0.975))
+quantile(lambda_ff, c(0.025, 0.5, 0.975))
+
+DIC(TORNADO$DEATHS, lambda_t, pois_ll)
+DIC(FLASH_FLOOD$DEATHS, lambda_ff, pois_ll)
+@
+
+\subsection{Negative Binomial code}
+<<eval = FALSE>>=
+# --- negative binomial log-likelihood ---------------------------------------------------------
+nb_ll <- function(x, p) {
+  ll <- sum(dnbinom(x = x, prob = p, size = 1 / 4, log = TRUE))
+  return(ll)
+}
+
+# --- negative binomial model -----------------------------------------------------------------
+nb_fit <- function(data, nsim) {
+  x <- data
+  xbar <- mean(x)
+  n <- length(x)
+  r <- 1 / 4
+  p <- rbeta(nsim, n * xbar, n * r + 1 / 2) 
+  return(p)
+}
+
+# --- results - ---------------------------------------------------------------------------
+p_t <- nb_fit(data = TORNADO$DEATHS, nsim = 10000)
+p_ff <- nb_fit(data = FLASH_FLOOD$DEATHS, nsim = 10000)
+
+# --- credible intervals ----------------------------------------------------------------------
+quantile(p_t, c(0.025, 0.5, 0.975))
+quantile(p_ff, c(0.025, 0.5, 0.975))
+
+# --- dic ----------------------------------------------------------------------
+DIC(TORNADO$DEATHS, p_t, nb_ll)
+DIC(FLASH_FLOOD$DEATHS, p_ff, nb_ll)
+
+@
 
 
 \section{Derivations}
 \label{a:derivation}
 This appendix will include details on the calculations required to derive our models.
+\subsection{Poisson Derivation}
+\label{a:dP}
+The likelihood for a sum of Poisson random variables can be written as follows:
+$$\mathcal{L}(X|\lambda)\propto\lambda^{n\bar{X}}e^{-n\lambda}.$$ 
+Since we want the data to speak for itself, we will use a non-informative random variable, namely, Jeffreys' prior. For the Poisson distribtion this is given as follows:
+$$\pi(\lambda)\propto\lambda^{1/2-1}e^{-0\cdot\lambda}.$$
+We recognize this as the kernel of an improper gamma distribution. Combining the likelihood and the prior distribtion yields the following posterior distribution:
+$$p(\lambda|X)=\lambda^{n\bar{X}+1/2-1}e^{-n\lambda}.$$
+We recognize this as the kernel of a gamma distribution, namely
+$$\lambda|X\sim\mathcal{G}amma(n\bar{X}+1/2,n).$$ 
+
+\subsection{Negatvie Binomial Derivation}
+\label{a:dNB}
+The likelihood for a sum of Negative Binomial random variables can be written as follows:
+$$\mathcal{L}(X|r,p)=\Bigg[\prod_{i=1}^n\frac{\Gamma(r+x_i)}{\Gamma(r)x_i!}\Bigg]p^{n\bar{X}}(1-p)^{nr}.$$
+Since we want the data to speak for itself, we will use a non-informative random variable, namely, Jeffreys' prior. For the Poisson distribtion this is given as follows:
+$$\pi(r,p)=r^{1/2}p^{-1}(1-2)^{-1/2}.$$
+Combining the likelihood and the prior distribtion yields the following posterior distribution:
+$$p(r,p|X)=\Bigg\{\Bigg[\prod_{i=1}^n\frac{\Gamma(r+x_i)}{\Gamma(r)x_i!}\Bigg]p^{n\bar{X}}(1-p)^{nr}\Bigg\}\Bigg\{r^{1/2}p^{-1}(1-2)^{-1/2}\Bigg\}$$
+From this posterior we obtain the full conditionals. First consider $p|r,X$:
+$$p(p|r,X)\propto p^{n\bar{x}-1}(1-p)^{nr+1/2-1}$$
+We recognize this as the kernel of a beta distribution, namely
+
+$$p|r,X\sim\mathcal{B}eta(n\bar{X},nr+1/2).$$
+Next consider $r|p,X$:
+$$p(r|p,X)\propto\bigg[\prod_{i=1}^n\Gamma(r+x_i)\bigg]\Gamma(r)^{-n}(1-p)^{nr}r^{1/2}$$
+
 \subsection{Zero Inflated Poisson Derivation}
 \label{a:dZIP}
 \noindent In obtaining our full conditionals, we can simplify this slightly to obtain the following:

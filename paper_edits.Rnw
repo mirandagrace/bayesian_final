@@ -57,7 +57,6 @@
 
 \setlength{\marginparwidth}{2cm}
 \begin{document}
-\SweaveOpts{concordance=TRUE}
 <<imports, cache=FALSE, echo=FALSE>>= 
 read_chunk('zinb_sampler.R')
 options(scipen=4, digits=3)
