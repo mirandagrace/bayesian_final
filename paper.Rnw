@@ -73,18 +73,19 @@ storm_details <- small_storms
 \end{center}
 \section{Introduction}
 \label{s:intro}
-This analysis will be done on a data set of a variety of measurements about severe weather in the United States. 
-We chose to use a subset of that data covering the years 1996 through 2016. The data coms from the NOAA website \cite{dataset}. For this project we focused on the deaths directly attributable to a type of weather event. In the interest of time, we considered two types of severe weather, Tornados and Flash Floods, reponsible for the second and third most direct deaths among weather types. Understanding how and at what rate severe weather events become lethal in the United States has tremendous public health impacts. In this paper we compare four possible models for the deaths: The traditional Poisson and negative binomial distributions, as well as the zero inflated variant of each. The remainder of this analysis is organized as follows: Section~\ref{s:methods} discusses and derives the models. Section~\ref{s:results} describes the results of the analysis. And Section~\ref{s:discussion} contains the conclusions.
+Tornados and Flash Floods are reponsible for the second and third most direct deaths among weather types in the United States. Understanding how and at what rate severe weather events become lethal in the United States has tremendous public health impacts. NOAA's website has a database of weather events and the death toll available on their website \cite{dataset}. For this study we looked at events from 1996-2016.
+
+The death toll from a severe weather event is a form of `count' data. 
+The most common model used for count data is the Poisson distribution. 
+However for some natural events, the negative binomial model is a better fit, because it is more flexible and allows for a difference between mean and variance.
+
+Fortunately, the vast majority of severe weather events in the United States involve no deaths, so to account for the possibility of structural zeros, therefore we also considered zero inflated variants. 
+These distributions are created by returning $0$ with probability $\sigma$ and sampling from the original distribution with probability $(1-\sigma)$. We will derive and fit a model for each of the four distributions and see if there is a difference in our results and evaluate to determine which model best fits the data.
+
+The remainder of this analysis is organized as follows: Section~\ref{s:methods} discusses and derives the models. Section~\ref{s:results} describes the results of the analysis. And Section~\ref{s:discussion} contains the conclusions.
 
 \section{Methods}
 \label{s:methods}
-The deaths attributed to a severe weather event is `count' data. 
-The most common model used for count data is the Poisson distribution. 
-However for some weather events, the negative binomial model is a better fit, because the Poisson distribution assumes that the events being counted occur independently.
-
-Fortunately, the vast majority of severe weather events in the United States involve no deaths, therefore we wanted to also account for the possibility of structural zeros, therefore we also considered zero inflated variants. 
-These distributions are created by returning $0$ with probability $\sigma$ and sampling from the original distribution with probability $(1-\sigma)$. We will derive and fit a model for each of the four distributions and see if there is a difference in our results and evaluate to determine which model best fits the data.
-
 \subsection{Poisson}
 \label{ss:mPoisson}
 The Poisson model has one parameter, $\lambda$ represents the expected number of occurances of the event of interest. For a single random variable $x$, the probability density is:
@@ -135,14 +136,14 @@ For a single $X$ the probability density is:
 $$p(X|\sigma, p, r) = \sigma I_{X=0}(X) + (1-\sigma)\frac{\Gamma(r+X)}{\Gamma(r)X!}p^X(1-p)^r.$$
 We take the uniform priors for $\sigma$ and $p$ as well as the non-informative gamma for $r$ which is $r^{-1/2}$. For a full derivation, see \ref{a:dZINB}. My posterior is:
 $$p(r,\sigma, p|X)\propto\left(\sigma + (1-\sigma)(1-p)^r\right)^Z(1-\sigma)^{N-Z}(1-p)^{(N-Z)r}p^{\sum_{i=1}^NX_i}r^{-1/2}\prod_{i=1}^N\left(\frac{\Gamma(r+X_i)}{\Gamma(r)}\right)$$
-This distribution does not factor nicely, so I will use the Metropolis algorithm to sample from it. Because this posterior does not suggest any obvious proposal distributions I will sample each iteratively from a truncated normal distribution centered at $\theta^*$, and with a variance that is tuned to yield an appropriate acceptance rate.
+This distribution does not factor, so I will use the Metropolis-Hastings algorithm to sample from it. I will use a truncated normal distribution centered at $\theta^*$ proposal density, and tune the variance for efficient convergence.
 
 \section{Results}
 \label{s:results}
 \subsection{Poisson}
 \label{ss:rPoisson}
 
-Because the posterior from our Poisson likelihood and noninformative prior had a recognizable kernel, namely $\mathcal{G}amma(n\bar{X}+1/2,n)$, we were able to sample from this distribution directly. For both Tornados, and Flash Floods, 10,000 samples were taken, to simulate the variable of interest, $\lambda$. The results are summarized in Table~\ref{t:rPOIS}, while density plots can be found in Figure~\ref{f:poisnbdensity}.
+The posterior from our Poisson likelihood and noninformative prior had a recognizable kernel, namely $\mathcal{G}amma(n\bar{X}+1/2,n)$, therefore we were able to sample from this distribution directly. For both event types, 10,000 samples were taken, to simulate the variable of interest, $\lambda$. The results are summarized in Table~\ref{t:rPOIS}, while density plots can be found in Figure~\ref{f:poisnbdensity}.
 
 \begin{table}
     \centering
@@ -150,16 +151,16 @@ Because the posterior from our Poisson likelihood and noninformative prior had a
     \label{t:rPOIS}
     \begin{tabular}{| l | l | l |}
     \hline
-    Event Type & $\lambda$  \\ \hline
-    Tornado & 0.0592 (0.0564, 0.0620) \\ \hline
-    Flash Flood & 0.0179 (0.0170, 0.0189) \\ \hline
+    Event Type &  Tornado &  Flash Flood \\ \hline
+    $\lambda$ & 0.0592 (0.0564, 0.0620)  & 0.0179 (0.0170, 0.0189)\\
+    \hline
     \end{tabular}
 \end{table}
 
 \begin{figure}
 \centering
-\includegraphics[width=.45\textwidth]{figure/POIS_Density.pdf}
-\includegraphics[width=.45\textwidth]{figure/NB_Density.pdf}
+\includegraphics[width=.4\textwidth]{figure/POIS_Density.pdf}
+\includegraphics[width=.4\textwidth]{figure/NB_Density.pdf}
 \caption{Posterior density plots for Poisson (left) and Negative Binomial (right) for flood parameters (in blue), and tornado parameters (black). The solid line represents the median and the dashed lines indicate the 95\% confidence interval.}
 \label{f:poisnbdensity}
 \end{figure}
@@ -167,37 +168,21 @@ Because the posterior from our Poisson likelihood and noninformative prior had a
 \subsection{Negative Binomial}
 \label{ss:rNBinom}
 
-As in the case of the Poisson distribution, the conditional posterior from our Negative Binomial likelihood and noninformative prior had a recognizable kernel for $p$, namely $\mathcal{B}eta(n\bar{X},nr+1/2)$, thus we were able to sample from this distribution directly. Meanwhile we took $r$ as known. For both Tornados, and Flash Floods, 10,000 samples were taken, to simulate the variable of interest, $p$. The results are summarized in Table~\ref{t:rNB}, while density plots can be found in Figure~\ref{f:poisnbdensity}.
-
-\begin{table}
-    \centering
-    \caption{Posterior distributions of $p$, for both event types. The second column relays the median of the sample for $p$, with the 95 percent credible interval in parentheses.}
-    \label{t:rNB}
-    \begin{tabular}{| l | l | l |}
-    \hline
-    Event Type & $p$  \\ \hline
-    Tornado & 0.0559 (0.0534, 0.0585) \\ \hline
-    Flash Flood & 0.0176 (0.0167, 0.0186) \\ \hline
-    \end{tabular}
-\end{table}
-
+The conditional posterior from our Negative Binomial likelihood and noninformative prior also had a recognizable kernel for $p$, namely $\mathcal{B}eta(n\bar{X},nr+1/2)$, thus we were able to sample from this distribution directly. We took $r$ as known. For both event types, 10,000 samples were taken. The results are summarized in Table~\ref{t:rNB}, and density plots can be found in Figure~\ref{f:poisnbdensity}.
 \subsection{Zero Inflated Poisson}
 \label{ss:rZiPoisson}
-
-In tuning the parameters of the two models, slightly different values were chosen for the two different event types. The proposal distribution selected for $\lambda$ was a gamma(2, 2) for tornados, and a gamma(1, 2) for flash floods. The proposal for p within the tornado model was a beta(1940, 60), whereas it was a beta(2945, 55) in the flash flood model. 
-
-For each variable of interest, 20,000 samples were taken. As convergence was not immediately achieved, the first 10,000 samples were discarded as a burn-in. The results are summarized in Table~\ref{t:rZIP}. Density plots can be found in Figure~\ref{f:zipfig}.
+The proposal distribution selected for $\lambda$ was a gamma(2, 2) for tornados, and a gamma(1, 2) for flash floods. The proposal for p within the tornado model was a beta(1940, 60), whereas it was a beta(2945, 55) in the flash flood model. For each variable, 20,000 samples were taken. As convergence was not immediately achieved, the first 10,000 samples were discarded as a burn-in. The results are summarized in Table~\ref{t:rZIP}. Density plots can be found in Figure~\ref{f:zipfig}.
 
 \begin{table}
     \centering
-    \caption{The posterior distributions of $\lambda$ and p, for both event types. The second column relays the mean of the sample for $\lambda$, with the 95 percent credible interval in parentheses. The third does the same for p.}
-    \label{t:rZIP}
-    \begin{tabular}{| l | l | l |}
-    \hline
-    Event Type & $\lambda$ & p  \\ \hline
-    Tornado & 1.872 (1.030, 3.710) & 0.971 (0.968, 0.973) \\ \hline
-    Flash Flood & 0.562 (0.293, 0.972) & 0.982 (0.981, 0.983) \\ \hline
-    \end{tabular}
+      \caption{The posterior distributions of $\lambda$ and p, for both event types. The second column relays the mean and 95 percent credible interval in parentheses. The third does the same for p.}
+      \label{t:rZIP}
+      \begin{tabular}{| l | l | l |}
+      \hline
+      Event Type & $\lambda$ & p  \\ \hline
+      Tornado & 1.872 (1.030, 3.710) & 0.971 (0.968, 0.973) \\ \hline
+      Flash Flood & 0.562 (0.293, 0.972) & 0.982 (0.981, 0.983) \\ \hline
+      \end{tabular}
 \end{table}
 
 \begin{figure}
@@ -217,16 +202,13 @@ Posterior density plots (ZIP model) for flood parameters (in blue), and tornado 
 <<densityplot, echo=FALSE>>=
 @
 <<zinbparams, echo=FALSE, cache=TRUE>>=
-samplesize <- 1030000
+samplesize <- 2030000
 burnin <- 30000
-thin <- 100
+thin <- 250
 r.var=.00002
 p.var=.00001
 sigma.var=.001
 @
-The ZINB model was fit using the Metropolis-Hastings algorithm with a multivariate truncated normal distribution used as the proposal distribution. For the source code of the sampler, please see \ref{a:cZINB}.
-
-This model suffered severely from the curse of dimensionality. It was very slow to converge, and the very small variance needed for a reasonable acceptance led to high autocorrelation, meaning agressive thinning was necessary. %Running mean plots the Flash Flood models can be found in Figure~\ref{f:zinbconvergence}. 
 <<floodsample, cache=TRUE, cache.vars='flood.zinb', echo=FALSE, dependson='zinbparams'>>=
 flood.zinb <- zinb.sampler(storm_details, "Flash Flood", samplesize, 
                            r.var=r.var, p.var=p.var, sigma.var=sigma.var, 
@@ -237,8 +219,9 @@ tornado.zinb <- zinb.sampler(storm_details, "Tornado", samplesize,
                              r.var=r.var, p.var=p.var, sigma.var=sigma.var, 
                              burnin=burnin, thinning=thin)
 @
-In the end $\Sexpr{samplesize}$ samples were drawn for each model, with a burn in of $\Sexpr{burnin}$ and one of every $\Sexpr{thin}$ samples was retained, resulting in a final sample size of $\Sexpr{length(flood.zinb$sigma)}$. %The flood model had an acceptance rate of $\Sexpr{mean(flood.zinb$ar)}$ and the tornado model had an acceptance rate of $\Sexpr{mean(flood.zinb$ar)}$. 
-The resulting densities are pictured in Figure~\ref{f:zinbdensity}, and Table~\ref{t:ZINBparams}, though due to questions of convergence the results should viewed with caution.
+The ZINB model was fit using the Metropolis-Hastings algorithm with a truncated multivariate normal proposal distribution. For the source code of the sampler, please see \ref{a:cZINB}. Because it was fitting 3 parameters simultaniously this model was slow to converge, and had high autocorrelation, requiring agressive thinning. %Running mean plots the Flash Flood models can be found in Figure~\ref{f:zinbconvergence}. 
+$\Sexpr{samplesize}$ samples were drawn for each model, with a burn in of $\Sexpr{burnin}$ and one of every $\Sexpr{thin}$ samples was retained, for a final sample size of $\Sexpr{length(flood.zinb$sigma)}$. %The flood model had an acceptance rate of $\Sexpr{mean(flood.zinb$ar)}$ and the tornado model had an acceptance rate of $\Sexpr{mean(flood.zinb$ar)}$. 
+The resulting densities are pictured in Figure~\ref{f:zinbdensity}, and Table~\ref{t:ZINBparams}. The densities for $p$ and $r$ are readily interpretable:  $p$ can be understood to measure dangerousness and $r$ can be thought of as duration. This implies floods are longer lasting than tornadoes, but less dangerous.
 <<evaluation, echo=FALSE, cache=FALSE>>=
 @
 <<model-eval, echo=FALSE, cache=TRUE, dependson=c('floodsample', 'tornadosample')>>=
@@ -251,11 +234,11 @@ tornado.dic.zinb <- dic(storm_details, "Tornado", tornado.zinb$sigma,
 #tornado.wiac.zinb <- wiac(storm_details, "Tornado", tornado.zinb$sigma, 
 #                          tornado.zinb$r, tornado.zinb$p)
 @
-The DIC for floods and tornadoes respectively were $\Sexpr{as.integer(flood.dic.zinb)}$ and $\Sexpr{as.integer(tornado.dic.zinb)}$.
 \begin{table}
 \centering
 \caption{The following table shows the results of the flash flood ZINB model and the tornado ZINB model. It shows the mean and the median for each parameter as well as the 95\% credible interval.}
 \label{t:ZINBparams}
+\scalebox{.8}{
 \begin{tabular}{lcccccc}
 \toprule
 &\multicolumn{3}{c}{Flash Flood}&\multicolumn{3}{c}{Tornado}\\
@@ -287,7 +270,7 @@ $r$ &  \Sexpr{mean(flood.zinb$r)} &
   (\Sexpr{quantile(tornado.zinb$r, probs=c(.025))[1]}, 
     \Sexpr{quantile(tornado.zinb$r, probs=c(.975))[1]})\\
 \bottomrule
-\end{tabular}
+\end{tabular}}
 \end{table}
 %\begin{figure}[p]
 %	\centering
@@ -339,7 +322,7 @@ $r$ &  \Sexpr{mean(flood.zinb$r)} &
 %\end{figure} 
 
 \begin{figure}
-	\centering
+	\centering\scalebox{.8}{
 <<zinbdensity, cache=TRUE, echo=FALSE, dependson=c('floodsample', 'tornadosample'), fig.height=2.5, fig.width=6>>=
 par(mfrow=c(1,3))
 double.density.plot(flood.zinb$sigma, tornado.zinb$sigma,
@@ -358,17 +341,17 @@ double.density.plot(flood.zinb$r, tornado.zinb$r,
                     expression(p*group("(",paste(r, "|", X),")")),
                     col=c('blue', 'black'))
 @
+}
 	\caption{Posterior density curves for each of the three variables (ZINB model). The flood posterior is shown in blue and the tornado posterior is shown in black.}
 	\label{f:zinbdensity}
 \end{figure} 
 \section{Discussion}
 \label{s:discussion}
-The goal of this analysis was to determine which of the four models was the best fit for the data. In order to make this determination the DIC was calculated for each model on both tornados and flash floods. The results are summarized in Table~\ref{t:evalresults}.
-
 \begin{table}
 \centering
 \caption{The following table shows the resulting DIC for each of the four models on both the tornado data and the flash flood data.}
 \label{t:evalresults}
+\scalebox{.8}{
 \begin{tabular}{lrr}
 \toprule
 Model & DIC Flash Flood & DIC Tornado\\
@@ -378,12 +361,13 @@ Negative Binomial & 101548 & 26372\\
 ZIP & 10454 & 8727 \\
 ZINB & \Sexpr{as.integer(flood.dic.zinb)}&\Sexpr{as.integer(tornado.dic.zinb)}\\
 \bottomrule
-\end{tabular}
+\end{tabular}}
 \end{table}
+The goal of this analysis was to determine which of the four models best fit the data. In order to make this determination the DIC was calculated for each model on both tornados and flash floods. The results are summarized in Table~\ref{t:evalresults}.
+The Zero Inflated Poisson model has the lowest DIC, for Flash Floods and the ZINB has the lowest for Tornados. For estimating or predicting lethality counts for weather it appears that zero inflated models out perform their plain variants however, which zero inflated model is not clear, as we only did two weather events and the ZINB and ZIP were similar. When attempting a regression model of death counts from weather events, researchers should consider a zero inflated model.
 
-In general, models with smaller DIC are preferred to models with larger DIC. From the table we can see that the Zero Inflated Poisson model has the lowest DIC, both for Flash Floods and Tornados. Thus for estimating the rate of leathality of Flash Floods, Tornados, and possibly other severe weather, we should use a Zero Inflated Poisson model to fit the data. 
+Negative binomial models tend to perform better than Poisson models when the mean is not equal to the varaince. It may be that this was true for the Tornadoes, but not true for the floods. The overdispersion of the Tornadoes can be clearly seen when comparing the posterior $\lambda$s for the ZIP model in Figure~\ref{f:zipfig}.
 
-\clearpage
 \begin{thebibliography}{2}
   \bibitem{dataset} NOAA's Severe Weather Data Inventory, 
     \url{https://www1.ncdc.noaa.gov/pub/data/swdi/stormevents/csvfiles/}. 

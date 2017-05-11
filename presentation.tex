@@ -296,6 +296,7 @@ These are unrecognizable. I ended up alternatively sampling from the two using M
 	\end{frame}
 	\begin{frame}
 		\frametitle{Zero Inflated Negative Binomial Model:Results}
+			$2030000$ samples were drawn for each model, with a burn in of $30000$ and one of every $250$ samples was retained, resulting in a final sample size of $8000$.
 		\begin{itemize}
 			\item Curse of Dimensionality; very slow convergence.
 			\item High autocorrelation
@@ -303,37 +304,37 @@ These are unrecognizable. I ended up alternatively sampling from the two using M
 		\end{itemize}
 		\begin{table}
 			\centering
-			\scalebox{0.6}{
+			\scalebox{.6}{
 			\begin{tabular}{lcccccc}
 				\toprule
 				&\multicolumn{3}{c}{Flash Flood}&\multicolumn{3}{c}{Tornado}\\
 				\cmidrule(r){2-4}\cmidrule(l){5-7}
 				Parameter & Mean Value &Median Value & (95\% CI)& Mean Value &Median Value & (95\% CI)\\
 				\midrule
-				$\sigma$ & 0.307 &
-				0.282&
-				(0.013, 
-				0.716)&
-				0.299 &
-				0.276&
+				$\sigma$ & 0.308 &
+				0.287&
 				(0.012, 
-				0.702)\\
-				$p$ &  0.554 &
+				0.715)&
+				0.29 &
+				0.262&
+				(0.012, 
+				0.693)\\
+				$p$ &  0.555 &
 				0.555&
 				(0.518, 
-				0.589)&
-				0.862 &
+				0.591)&
+				0.863 &
 				0.863&
-				(0.841, 
+				(0.842, 
 				0.882)\\
 				$r$ &  0.024 &
 				0.02&
 				(0.014, 
-				0.052)&
+				0.053)&
 				0.015 &
 				0.013&
 				(0.009, 
-				0.033)\\
+				0.031)\\
 				\bottomrule
 			\end{tabular}}
 		\end{table}
@@ -342,32 +343,35 @@ These are unrecognizable. I ended up alternatively sampling from the two using M
 		\frametitle{Zero Inflated Negative Binomial Model}
 		\begin{figure}[p]
 			\centering
-			\includegraphics[width=.9\textwidth]{figure/zinbdensity-1} 
-			\caption{Posterior density curves for each of the three variables. The flood posterior is shown in blue and the tornado posterior is shown in black.}
+			\includegraphics[width=.8\textwidth]{figure/zinbdensity-1} 
 		\end{figure} 
+		\begin{itemize}
+			\item{$p$ can be understood to be ``dangerousness''}
+			\item{$r$ can be thought of as ``duration''}
+		\end{itemize}
+		In this light results make sense: floods are longer lasting (on average) than tornadoes, but less dangerous (on average).
 	\end{frame}
 	
 	\section{Conclusions}
 	\begin{frame}
 		\frametitle{Conclusions: Model Evaluation Table}
 		% Waic dic table goes here
-		\begin{table}
-\centering
-\caption{The following table shows the resulting DIC for each of the four models on both the tornado data and the flash flood data.}
-\label{t:evalresults}
-\begin{tabular}{lcc}
-\toprule
-Model & DIC Flash Flood & DIC Tornado\\
-\midrule
-Poisson & 14237 & 17606\\
-Negative Binomial & 101548 & 26372\\
-ZIP & 10454 & 8727 \\
-ZINB & 10804.104&7166.309\\
-\bottomrule
-\end{tabular}
+\begin{table}
+	\centering
+	\label{t:evalresults}
+	\begin{tabular}{lrr}
+		\toprule
+		Model & DIC Flash Flood & DIC Tornado\\
+		\midrule
+		Poisson & 14237 & 17606\\
+		Negative Binomial & 101548 & 26372\\
+		ZIP & 10454 & 8727 \\
+		ZINB & 10804&7166\\
+		\bottomrule
+	\end{tabular}
 \end{table}
 
-Models with smaller DIC are preferred. From the table we can see that the Zero Inflated Poisson model has the lowest DIC, both for Flash Floods and Tornados. Thus for estimating the rate of lethality of Flash Floods, Tornados, we should use a Zero Inflated Poisson model.
+The Zero Inflated Poisson model has the lowest DIC, for Flash Floods and the ZINB has the lowest for Tornadoes. For estimating or predicting lethality counts for weather it appears that Zero inflated models out perform their plain variants however, which zero inflated model is not clear, as we only did two weather events and the ZINB and ZIP were similar.
 	\end{frame}
 	\begin{frame}
 	
@@ -376,7 +380,6 @@ Models with smaller DIC are preferred. From the table we can see that the Zero I
 		\begin{enumerate}
 			\item{Re-parameterize the ZINB model/look into other techniques to improve convergence.}
 			\item{See if the results hold on other extreme weather events.}
-			\item{Attempt to fit all data with a mixture model.}
 		\end{enumerate}
 	\end{frame}
 	\begin{frame}
