@@ -163,13 +163,57 @@
 	\section{Zero Inflated Poisson Model}
 	\begin{frame}
 		\frametitle{Zero Inflated Poisson Model}
-		
+		The zero inflated Poisson model has two parameters p, the probability of a structural zero, and $\lambda$, the usual Poisson parameter. 
+		For a single X, the probability density is:
+		$$pI_{X=0}(X) + (1-p)\frac{\lambda^Xe^-\lambda}{X!}$$
 	\end{frame}
 	\begin{frame}
 		\frametitle{Zero Inflated Poisson Model}
-
+		One way to write the likelihood is as follows:
+		$$\prod_{x_i=0}\bigg[p+(1-p)\frac{e^{-\lambda}\lambda^{x_i}}{x_i!}\bigg]\prod_{x_i \ne 0}\bigg[(1-p)\frac{e^{-\lambda}\lambda^{x_i}}{x_i!}\bigg]$$
+		Bayarri, Berger, and Datta (2008)\footnotemark suggest using the prior distribution $\pi(\lambda, p) \propto \frac{1}{\sqrt{\lambda}}I(0<p<1)$. This gives us the following posterior:
+		$$\prod_{x_i=0}\bigg[p+(1-p)\frac{e^{-\lambda}\lambda^{x_i}}{x_i!}\bigg]\prod_{x_i \ne 0}\bigg[(1-p)\frac{e^{-\lambda}\lambda^{x_i - 1/2}}{x_i!}\bigg]$$
+		\footnotetext[1]{Bayarri, M., Berger, J., Datta, G. (2008). Objective testing of Poisson versus inflated Poisson models. IMS 	Collections, 3, 105-121.}
 	\end{frame}
-	
+	\begin{frame}
+		\frametitle{Zero Inflated Poisson Model}
+		We can simplify a bit to get the following conditionals:
+		\[
+p(\lambda|X, p) \propto \prod_{x_i=0}\bigg[p+(1-p)\frac{e^{-\lambda}\lambda^{x_i}}{x_i!}\bigg]\prod_{x_i \ne 0}\bigg[e^{-\lambda}\lambda^{x_i - 1/2}\bigg]
+\]
+
+\[
+p(p|X, \lambda) \propto \prod_{x_i=0}\bigg[p+(1-p)\frac{e^{-\lambda}\lambda^{x_i}}{x_i!}\bigg]\prod_{x_i \ne 0}\bigg[(1-p)\bigg]
+\]
+
+These are unrecognizable. I ended up alternatively sampling from the two using Metropolis Hastings. For lambda I settled on a gamma proposal, and for p I settled on a Beta proposal. 
+	\end{frame}
+	\begin{frame}
+		\frametitle{Zero Inflated Poisson Model}
+		\begin{table}
+    \centering
+    \caption{After taking 20,000 samples from each variable and discarding 10,000 as a burn-in, we obtained the following (values are the mean of the posterior sample followed by 95 percent credible interval in parentheses)}
+    \label{t:rZIP}
+    \begin{tabular}{| l | l | l |}
+    \hline
+    Event Type & $\lambda$ & p  \\ \hline
+    Tornado & 1.872 (1.030, 3.710) & 0.971 (0.968, 0.973) \\ \hline
+    Flash Flood & 0.562 (0.293, 0.972) & 0.982 (0.981, 0.983) \\ \hline
+    \end{tabular}
+\end{table}
+	\end{frame}
+	\begin{frame}
+		\frametitle{Zero Inflated Poisson Model}
+		Convergence of parameters (flood model):
+		\centering
+		\includegraphics[width=.9\textwidth]{figure/ZIP_Flood_Conv.pdf} 
+	\end{frame}
+	\begin{frame}
+		\frametitle{Zero Inflated Poisson Model}
+		Posterior Densities (Blue = Flood; Black = Tornado):
+		\centering
+		\includegraphics[width=.9\textwidth]{figure/ZIP_Density.pdf} 
+	\end{frame}	
 	\section{Zero Inflated Negative Binomial Model}
 	\begin{frame}
 		\frametitle{Zero Inflated Negative Binomial Model}
